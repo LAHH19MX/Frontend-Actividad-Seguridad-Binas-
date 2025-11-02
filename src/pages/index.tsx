@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { Navbar, Footer, CTA } from "@/components/layout";
+import "@/styles/globals.css";
 import {
   Zap,
   Shield,
