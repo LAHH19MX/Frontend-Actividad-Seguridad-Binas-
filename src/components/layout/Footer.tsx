@@ -1,3 +1,4 @@
+import "@/styles/globals.css";
 import Link from "next/link";
 
 const Footer = () => {
