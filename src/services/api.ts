@@ -3,7 +3,7 @@ import axios from "axios";
 // URL base del backend
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://backend-actividad-seguridad-binas-production.up.railway.app/api";
+  "https://backend-actividad-seguridad-binas.onrender.com/api";
 
 // Crear instancia de axios
 const api = axios.create({

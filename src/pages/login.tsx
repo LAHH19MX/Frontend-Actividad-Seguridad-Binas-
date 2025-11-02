@@ -247,7 +247,7 @@ export default function Login() {
           {/* Logo en la esquina superior derecha */}
           <div className="absolute top-6 right-8 hidden lg:block">
             <Image
-              src="/logo.png"
+              src="/logoS.png"
               alt="SySCOM"
               width={100}
               height={32}
