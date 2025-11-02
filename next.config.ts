@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  reactStrictMode: true,
+  webpack: (config) => {
+    config.infrastructureLogging = { level: "error" };
+    return config;
+  },
 };
 
 export default nextConfig;
