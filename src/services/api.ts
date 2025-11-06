@@ -1,8 +1,9 @@
 import axios from "axios";
 
 // URL base del backend
-const API_URL = "https://backend-actividad-seguridad-binas.onrender.com";
+const API_URL = "https://backend-actividad-seguridad-binas.onrender.com/api";
 //https://backend-actividad-seguridad-binas.onrender.com
+//https://backend-actividad-seguridad-binas.onrender.com/api
 // Crear instancia de axios
 const api = axios.create({
   baseURL: API_URL,
