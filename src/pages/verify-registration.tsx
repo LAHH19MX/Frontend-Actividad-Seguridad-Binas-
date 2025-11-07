@@ -9,10 +9,7 @@ import { isValidCode } from "@/utils/validators";
 export default function VerifyRegistration() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [formData, setFormData] = useState({
-    emailCode: "",
-    smsCode: "",
-  });
+  const [emailCode, setEmailCode] = useState(""); // Solo un código
   const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
@@ -49,12 +46,12 @@ export default function VerifyRegistration() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { value } = e.target;
     // Solo permitir números y máximo 6 dígitos
     const numericValue = value.replace(/\D/g, "").slice(0, 6);
-    setFormData((prev) => ({ ...prev, [name]: numericValue }));
-    if (errors[name]) {
-      setErrors((prev: any) => ({ ...prev, [name]: "" }));
+    setEmailCode(numericValue);
+    if (errors.emailCode) {
+      setErrors({ ...errors, emailCode: "" });
     }
     setApiError("");
   };
@@ -62,16 +59,10 @@ export default function VerifyRegistration() {
   const validateForm = () => {
     const newErrors: any = {};
 
-    if (!formData.emailCode) {
+    if (!emailCode) {
       newErrors.emailCode = "El código de email es obligatorio";
-    } else if (!isValidCode(formData.emailCode)) {
+    } else if (!isValidCode(emailCode)) {
       newErrors.emailCode = "El código debe tener 6 dígitos";
-    }
-
-    if (!formData.smsCode) {
-      newErrors.smsCode = "El código de SMS es obligatorio";
-    } else if (!isValidCode(formData.smsCode)) {
-      newErrors.smsCode = "El código debe tener 6 dígitos";
     }
 
     setErrors(newErrors);
@@ -90,8 +81,8 @@ export default function VerifyRegistration() {
     try {
       const response = await authService.verifyRegistration({
         email,
-        emailCode: formData.emailCode,
-        smsCode: formData.smsCode,
+        emailCode: emailCode,
+        // smsCode: ""
       });
 
       console.log("✅ Verificación exitosa:", response);
@@ -153,7 +144,7 @@ export default function VerifyRegistration() {
                 Verifica tu cuenta
               </h1>
               <p className="text-gray-600 text-sm">
-                Hemos enviado códigos de verificación a:
+                Hemos enviado un código de verificación a tu email:
               </p>
               <p className="text-[#3498db] font-semibold mt-2">{email}</p>
             </div>
@@ -176,7 +167,7 @@ export default function VerifyRegistration() {
                     />
                   </svg>
                   <span className="text-sm text-gray-700">
-                    Los códigos expiran en:
+                    El código expira en:
                   </span>
                 </div>
                 <span
@@ -207,13 +198,13 @@ export default function VerifyRegistration() {
               {/* Código de Email */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Código de Email
+                  Código de Verificación
                 </label>
                 <Input
                   type="text"
                   name="emailCode"
                   placeholder="000000"
-                  value={formData.emailCode}
+                  value={emailCode}
                   onChange={handleChange}
                   error={errors.emailCode}
                   maxLength={6}
@@ -226,32 +217,6 @@ export default function VerifyRegistration() {
                     >
                       <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                       <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                    </svg>
-                  }
-                />
-              </div>
-
-              {/* Código de SMS */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Código de SMS
-                </label>
-                <Input
-                  type="text"
-                  name="smsCode"
-                  placeholder="000000"
-                  value={formData.smsCode}
-                  onChange={handleChange}
-                  error={errors.smsCode}
-                  maxLength={6}
-                  className="text-center text-2xl font-bold tracking-widest"
-                  icon={
-                    <svg
-                      className="h-5 w-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                     </svg>
                   }
                 />
@@ -283,10 +248,7 @@ export default function VerifyRegistration() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span>
-                  Si no recibes los códigos, revisa tu bandeja de spam o
-                  solicita nuevos códigos.
-                </span>
+                <span>Si no recibes el código, revisa tu bandeja de spam.</span>
               </p>
             </div>
           </div>

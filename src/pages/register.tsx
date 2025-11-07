@@ -303,6 +303,11 @@ export default function Register() {
                       </svg>
                     }
                   />
+                  {!errors.phone && (
+                    <p className="text-sm text-gray-500 mt-1 ml-1">
+                      Solo para contacto. La verificación se enviará por email.
+                    </p>
+                  )}
 
                   <div className="flex gap-4 pt-4">
                     <Button

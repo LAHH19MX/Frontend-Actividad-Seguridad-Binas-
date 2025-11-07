@@ -23,8 +23,11 @@ export default function Login() {
     if (errors[name]) {
       setErrors((prev: any) => ({ ...prev, [name]: "" }));
     }
-    // ✅ No limpiar apiError aquí - solo se limpia al enviar el form
+    if (apiError) {
+      setApiError("");
+    }
   };
+
   const validateForm = () => {
     const newErrors: any = {};
 
@@ -42,7 +45,7 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setApiError(""); // ✅ Limpiar error anterior
+    setApiError("");
 
     if (!validateForm()) return;
 
@@ -54,42 +57,50 @@ export default function Login() {
         password: formData.password,
       });
 
-      console.log("✅ Login exitoso:", response);
-
-      localStorage.setItem("tempToken", response.data.tempToken);
-      router.push("/verify-2fa");
+      // ✅ VERIFICACIÓN CORREGIDA - response ya es la data
+      if (response.success && response.data?.tempToken) {
+        localStorage.setItem("tempToken", response.data.tempToken);
+        router.push("/verify-2fa");
+      } else {
+        setApiError(response.error || "Error en el inicio de sesión");
+      }
     } catch (error: any) {
-      console.error("❌ Error en login:", error);
+      // ✅ MANEJO CORREGIDO DE ERROR 429
+      if (error.response?.status !== 401 && error.response?.status !== 429) {
+        console.error("Error en login:", error);
+      }
 
-      // ✅ Manejar diferentes tipos de errores
       if (error.response) {
-        // El servidor respondió con un código de error
         const status = error.response.status;
-        const errorMessage = error.response.data?.error || "Error desconocido";
+        const errorData = error.response.data;
+
+        const errorMessage =
+          errorData?.error ||
+          errorData?.message ||
+          errorData?.details ||
+          "Error en el servidor";
 
         switch (status) {
           case 401:
-            setApiError("Email o contraseña incorrectos");
+            setApiError("Usuario o contraseña incorrectos");
             break;
           case 403:
-            setApiError(errorMessage); // Cuenta bloqueada
+            setApiError(errorMessage || "Cuenta bloqueada temporalmente");
             break;
-          case 409:
-            setApiError(errorMessage); // Conflicto (no debería pasar en login)
+          case 429:
+            setApiError("Demasiados intentos. Por favor, espera unos minutos.");
             break;
           case 500:
             setApiError("Error del servidor. Intenta nuevamente más tarde.");
             break;
           default:
-            setApiError(errorMessage);
+            setApiError(errorMessage || "Error desconocido");
         }
       } else if (error.request) {
-        // La petición se hizo pero no hubo respuesta
         setApiError(
           "No se pudo conectar con el servidor. Verifica tu conexión."
         );
       } else {
-        // Error al configurar la petición
         setApiError("Error inesperado. Intenta nuevamente.");
       }
     } finally {

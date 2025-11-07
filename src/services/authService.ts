@@ -12,7 +12,7 @@ export interface RegisterData {
 export interface VerifyRegistrationData {
   email: string;
   emailCode: string;
-  smsCode: string;
+  // smsCode: string;
 }
 
 export interface LoginData {

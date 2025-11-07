@@ -111,7 +111,8 @@ export default function VerifyRecovery() {
     }
   };
 
-  const handleResend = async (method: "email" | "sms") => {
+  // ✅ CAMBIO: Función simplificada - solo email
+  const handleResend = async () => {
     setApiError("");
     setSuccessMessage("");
     setIsResending(true);
@@ -119,13 +120,11 @@ export default function VerifyRecovery() {
     try {
       const response = await authService.resendRecoveryCode({
         tempToken,
-        method,
+        method: "email",
       });
 
-      console.log(`✅ Código reenviado por ${method}`);
-      setSuccessMessage(
-        `Código reenviado por ${method === "email" ? "email" : "SMS"}`
-      );
+      console.log("✅ Código reenviado por email");
+      setSuccessMessage("Código reenviado a tu email");
       setTimeLeft(300); // Reiniciar timer
     } catch (error: any) {
       console.error("❌ Error reenviando código:", error);
@@ -256,55 +255,32 @@ export default function VerifyRecovery() {
               </Button>
             </form>
 
-            {/* Opciones de reenvío */}
+            {/* ✅ CAMBIO: Botón único de reenvío por email */}
             <div className="mt-6 space-y-3">
               <p className="text-sm text-gray-600 text-center">
                 ¿No recibiste el código?
               </p>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleResend("email")}
-                  disabled={isResending}
-                  className="flex-1 px-4 py-2 border-2 border-[#3498db] text-[#3498db] rounded-lg font-semibold hover:bg-[#3498db] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={isResending}
+                className="w-full px-4 py-3 border-2 border-[#3498db] text-[#3498db] rounded-lg font-semibold hover:bg-[#3498db] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                  Email
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleResend("sms")}
-                  disabled={isResending}
-                  className="flex-1 px-4 py-2 border-2 border-[#3498db] text-[#3498db] rounded-lg font-semibold hover:bg-[#3498db] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                    />
-                  </svg>
-                  SMS
-                </button>
-              </div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+                {isResending ? "Reenviando..." : "Reenviar código por email"}
+              </button>
             </div>
 
             {/* Info */}
@@ -342,7 +318,7 @@ export default function VerifyRecovery() {
               }}
               className="text-gray-600 hover:text-[#3498db] text-sm font-medium transition-colors"
             >
-              ← Volver
+              Volver
             </button>
           </div>
         </div>

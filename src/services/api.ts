@@ -3,7 +3,7 @@ import axios from "axios";
 // URL base del backend
 const API_URL = "https://backend-actividad-seguridad-binas.onrender.com/api";
 //https://backend-actividad-seguridad-binas.onrender.com
-//https://backend-actividad-seguridad-binas.onrender.com/api
+//
 // Crear instancia de axios
 const api = axios.create({
   baseURL: API_URL,
@@ -53,6 +53,11 @@ api.interceptors.response.use(
           window.location.href = "/login";
         }
       }
+
+      // ✅ NO console.error aquí - evita el log del error 401
+    } else {
+      // Para otros errores, sí muestra en consola
+      console.error("Error de API:", error);
     }
 
     return Promise.reject(error);

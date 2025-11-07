@@ -51,13 +51,16 @@ export default function ForgotPassword() {
 
       console.log("✅ Código de recuperación enviado:", response);
 
-      // Guardar token temporal
-      localStorage.setItem("recoveryToken", response.data.tempToken);
-      localStorage.setItem("recoveryEmail", email);
+      // ✅ VERIFICAR SI response.data EXISTE ANTES DE ACCEDER
+      if (response.data && response.data.tempToken) {
+        // Guardar token temporal
+        localStorage.setItem("recoveryToken", response.data.tempToken);
+        localStorage.setItem("recoveryEmail", email);
+      }
 
       setSuccessMessage(response.message);
 
-      // Redirigir a verificación
+      // ✅ REDIRIGIR SIEMPRE (tanto si el email existe como si no)
       setTimeout(() => {
         router.push("/verify-recovery");
       }, 2000);
@@ -163,7 +166,7 @@ export default function ForgotPassword() {
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
           <div className="absolute top-6 right-8 hidden lg:block">
             <Image
-              src="/logo.png"
+              src="/logoS.png"
               alt="SySCOM"
               width={100}
               height={32}
