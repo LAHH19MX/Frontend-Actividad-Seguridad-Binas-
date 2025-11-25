@@ -11,112 +11,111 @@ import {
   isValidPhone,
   isValidPassword,
   isValidName,
+  sanitizeInput,
+  isInputSafe,
+  getSafeInputError,
 } from "@/utils/validators";
 
 export default function Register() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
+    phone: "", // Solo los 10 dígitos
     password: "",
     confirmPassword: "",
+    acceptTerms: false, // Nuevo campo
   });
   const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+
+    // Si es checkbox, usar 'checked', si no, usar 'value'
+    const newValue = type === "checkbox" ? checked : value;
+
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
+
     if (errors[name]) {
       setErrors((prev: any) => ({ ...prev, [name]: "" }));
     }
     setApiError("");
   };
 
-  const validateStep1 = () => {
+  const validateForm = () => {
     const newErrors: any = {};
 
+    // Validar nombre
     if (!formData.name.trim()) {
       newErrors.name = "El nombre es obligatorio";
+    } else if (!isInputSafe(formData.name)) {
+      newErrors.name = getSafeInputError();
     } else if (!isValidName(formData.name)) {
       newErrors.name = "El nombre debe tener entre 2 y 100 caracteres";
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validateStep2 = () => {
-    const newErrors: any = {};
-
+    // Validar email
     if (!formData.email.trim()) {
       newErrors.email = "El email es obligatorio";
+    } else if (!isInputSafe(formData.email)) {
+      newErrors.email = getSafeInputError();
     } else if (!isValidEmail(formData.email)) {
       newErrors.email = "El formato del email es inválido";
     }
 
+    // Validar teléfono (solo 10 dígitos)
     if (!formData.phone.trim()) {
       newErrors.phone = "El teléfono es obligatorio";
     } else if (!isValidPhone(formData.phone)) {
-      newErrors.phone =
-        "El formato del teléfono es inválido (ej: +521234567890)";
+      newErrors.phone = "El teléfono debe tener exactamente 10 dígitos";
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validateStep3 = () => {
-    const newErrors: any = {};
-
+    // Validar contraseña
     if (!formData.password) {
       newErrors.password = "La contraseña es obligatoria";
     } else if (!isValidPassword(formData.password)) {
       newErrors.password =
-        "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial";
+        "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial (@$!%*?&#/)";
     }
 
+    // Validar confirmación de contraseña
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Confirma tu contraseña";
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Las contraseñas no coinciden";
     }
 
+    // Validar términos y condiciones
+    if (!formData.acceptTerms) {
+      newErrors.acceptTerms = "Debes aceptar los términos y condiciones";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleNext = () => {
-    if (currentStep === 1 && validateStep1()) {
-      setCurrentStep(2);
-    } else if (currentStep === 2 && validateStep2()) {
-      setCurrentStep(3);
-    }
-  };
-
-  const handleBack = () => {
-    setCurrentStep((prev) => Math.max(1, prev - 1));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError("");
 
-    if (!validateStep3()) return;
+    if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
-      const response = await authService.register({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        password: formData.password,
+      // Sanitizar inputs antes de enviar
+      const sanitizedData = {
+        name: sanitizeInput(formData.name),
+        email: sanitizeInput(formData.email),
+        phone: `+52${formData.phone}`, // Agregar +52 automáticamente
+        password: formData.password, // La contraseña NO se sanitiza
         confirmPassword: formData.confirmPassword,
-      });
+        // acceptTerms NO se envía al backend
+      };
+
+      const response = await authService.register(sanitizedData);
 
       console.log("✅ Registro exitoso:", response);
 
@@ -126,20 +125,32 @@ export default function Register() {
       // Redirigir a verificación
       router.push("/verify-registration");
     } catch (error: any) {
-      console.error("❌ Error en registro:", error);
-      const errorMessage =
-        error.response?.data?.error || "Error al registrar usuario";
-      setApiError(errorMessage);
+      // NO hacer console.error para errores esperados (400, 409, etc.)
+      const status = error.response?.status;
+      const EXPECTED_ERRORS = [400, 409, 429];
+
+      if (!EXPECTED_ERRORS.includes(status)) {
+        console.error("Error en registro:", error);
+      }
+
+      // Manejo específico de errores
+      if (status === 409) {
+        const errorMsg =
+          error.response?.data?.error ||
+          "El email o teléfono ya está registrado";
+        setApiError(errorMsg);
+      } else if (status === 400) {
+        const errorMsg = error.response?.data?.error || "Datos inválidos";
+        setApiError(errorMsg);
+      } else if (status === 429) {
+        setApiError("Demasiados intentos. Por favor, espera unos minutos.");
+      } else {
+        setApiError("Error al registrar usuario. Intenta nuevamente.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
-
-  const steps = [
-    { number: 1, label: "Información Personal" },
-    { number: 2, label: "Datos de Contacto" },
-    { number: 3, label: "Seguridad" },
-  ];
 
   return (
     <>
@@ -151,68 +162,15 @@ export default function Register() {
       <Navbar />
 
       <div className="min-h-screen bg-gray-50 py-12 px-4">
-        <div className="max-w-3xl mx-auto">
-          {/* Indicador de pasos */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              {steps.map((step, index) => (
-                <div key={step.number} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center flex-1">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all ${
-                        currentStep >= step.number
-                          ? "bg-[#3498db] text-white"
-                          : "bg-gray-200 text-gray-500"
-                      }`}
-                    >
-                      {currentStep > step.number ? (
-                        <svg
-                          className="w-6 h-6"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      ) : (
-                        step.number
-                      )}
-                    </div>
-                    <span
-                      className={`text-sm mt-2 text-center ${
-                        currentStep >= step.number
-                          ? "text-[#3498db] font-semibold"
-                          : "text-gray-500"
-                      }`}
-                    >
-                      {step.label}
-                    </span>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`h-1 flex-1 mx-4 rounded transition-all ${
-                        currentStep > step.number
-                          ? "bg-[#3498db]"
-                          : "bg-gray-200"
-                      }`}
-                    ></div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
+        <div className="max-w-2xl mx-auto">
           {/* Formulario */}
           <div className="bg-white rounded-lg shadow-md p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
                 Crear Cuenta
               </h2>
               <p className="text-gray-600">
-                Completa el formulario para registrarte en Syscom
+                Completa el formulario para registrarte en SySCOM
               </p>
             </div>
 
@@ -222,48 +180,42 @@ export default function Register() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit}>
-              {/* Paso 1: Información Personal */}
-              {currentStep === 1 && (
-                <div className="space-y-5">
-                  <Input
-                    label="Nombre Completo"
-                    type="text"
-                    name="name"
-                    placeholder="Juan Pérez"
-                    value={formData.name}
-                    onChange={handleChange}
-                    error={errors.name}
-                    icon={
-                      <svg
-                        className="h-5 w-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    }
-                  />
-
-                  <div className="pt-4">
-                    <Button
-                      type="button"
-                      onClick={handleNext}
-                      variant="primary"
-                      className="w-full"
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* ==================== INFORMACIÓN PERSONAL ==================== */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Información Personal
+                </h3>
+                <Input
+                  label="Nombre Completo"
+                  type="text"
+                  name="name"
+                  placeholder="Juan Pérez"
+                  value={formData.name}
+                  onChange={handleChange}
+                  error={errors.name}
+                  icon={
+                    <svg
+                      className="h-5 w-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
                     >
-                      Siguiente
-                    </Button>
-                  </div>
-                </div>
-              )}
+                      <path
+                        fillRule="evenodd"
+                        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  }
+                />
+              </div>
 
-              {/* Paso 2: Datos de Contacto */}
-              {currentStep === 2 && (
+              {/* ==================== DATOS DE CONTACTO ==================== */}
+              <div className="pt-4 border-t border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Datos de Contacto
+                </h3>
+
                 <div className="space-y-5">
                   <Input
                     label="Correo Electrónico"
@@ -285,53 +237,55 @@ export default function Register() {
                     }
                   />
 
-                  <Input
-                    label="Teléfono"
-                    type="tel"
-                    name="phone"
-                    placeholder="+521234567890"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    error={errors.phone}
-                    icon={
-                      <svg
-                        className="h-5 w-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                      </svg>
-                    }
-                  />
-                  {!errors.phone && (
-                    <p className="text-sm text-gray-500 mt-1 ml-1">
-                      Solo para contacto. La verificación se enviará por email.
-                    </p>
-                  )}
+                  {/* Campo de teléfono con +52 fijo */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Teléfono
+                    </label>
+                    <div className="flex gap-2">
+                      {/* +52 fijo (no editable) */}
+                      <div className="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 text-gray-700 font-medium">
+                        +52
+                      </div>
 
-                  <div className="flex gap-4 pt-4">
-                    <Button
-                      type="button"
-                      onClick={handleBack}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Atrás
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handleNext}
-                      variant="primary"
-                      className="flex-1"
-                    >
-                      Siguiente
-                    </Button>
+                      {/* Input para los 10 dígitos */}
+                      <div className="flex-1">
+                        <Input
+                          type="tel"
+                          name="phone"
+                          placeholder="1234567890"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          error={errors.phone}
+                          maxLength={10}
+                          icon={
+                            <svg
+                              className="h-5 w-5"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                            </svg>
+                          }
+                        />
+                      </div>
+                    </div>
+                    {!errors.phone && (
+                      <p className="text-sm text-gray-500 mt-1 ml-1">
+                        Solo para contacto. La verificación se enviará por
+                        email.
+                      </p>
+                    )}
                   </div>
                 </div>
-              )}
+              </div>
 
-              {/* Paso 3: Seguridad */}
-              {currentStep === 3 && (
+              {/* ==================== SEGURIDAD ==================== */}
+              <div className="pt-4 border-t border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Seguridad
+                </h3>
+
                 <div className="space-y-5">
                   <div>
                     <Input
@@ -383,27 +337,60 @@ export default function Register() {
                       </svg>
                     }
                   />
-
-                  <div className="flex gap-4 pt-4">
-                    <Button
-                      type="button"
-                      onClick={handleBack}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      Atrás
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      isLoading={isLoading}
-                      className="flex-1"
-                    >
-                      Crear Cuenta
-                    </Button>
-                  </div>
                 </div>
-              )}
+              </div>
+
+              {/* ==================== TÉRMINOS Y CONDICIONES ==================== */}
+              <div className="pt-4 border-t border-gray-200">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="acceptTerms"
+                    name="acceptTerms"
+                    checked={formData.acceptTerms}
+                    onChange={handleChange}
+                    className="mt-1 w-4 h-4 text-[#3498db] bg-gray-100 border-gray-300 rounded focus:ring-[#3498db] focus:ring-2"
+                  />
+                  <label
+                    htmlFor="acceptTerms"
+                    className="text-sm text-gray-700"
+                  >
+                    Acepto los{" "}
+                    <Link
+                      href="/terminos"
+                      target="_blank"
+                      className="text-[#3498db] hover:text-[#2980b9] font-semibold"
+                    >
+                      Términos y Condiciones
+                    </Link>{" "}
+                    y la{" "}
+                    <Link
+                      href="/privacidad"
+                      target="_blank"
+                      className="text-[#3498db] hover:text-[#2980b9] font-semibold"
+                    >
+                      Política de Privacidad
+                    </Link>
+                  </label>
+                </div>
+                {errors.acceptTerms && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {errors.acceptTerms}
+                  </p>
+                )}
+              </div>
+
+              {/* ==================== BOTÓN DE REGISTRO ==================== */}
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isLoading={isLoading}
+                  className="w-full"
+                >
+                  Crear Cuenta
+                </Button>
+              </div>
             </form>
 
             {/* Link a login */}

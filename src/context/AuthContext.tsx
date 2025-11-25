@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userData);
     setIsAuthenticated(true);
 
-    console.log("✅ Usuario autenticado:", userData);
+    // console.log("Usuario autenticado:", userData);
 
     // Redirigir según rol
     if (userData.role === "ADMIN") {
@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setIsAuthenticated(false);
 
-    console.log("✅ Sesión cerrada");
+    // console.log("Sesión cerrada");
 
     // Redirigir al home
     router.push("/");

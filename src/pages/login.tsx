@@ -6,6 +6,11 @@ import { useRouter } from "next/router";
 import { Input, Button, Alert } from "@/components/ui";
 import { Navbar, Footer } from "@/components/layout";
 import authService from "@/services/authService";
+import {
+  sanitizeInput,
+  isInputSafe,
+  getSafeInputError,
+} from "@/utils/validators";
 
 export default function Login() {
   const router = useRouter();
@@ -31,10 +36,14 @@ export default function Login() {
   const validateForm = () => {
     const newErrors: any = {};
 
+    // Validar email
     if (!formData.email.trim()) {
       newErrors.email = "El email es obligatorio";
+    } else if (!isInputSafe(formData.email)) {
+      newErrors.email = getSafeInputError();
     }
 
+    // Validar contraseña
     if (!formData.password) {
       newErrors.password = "La contraseña es obligatoria";
     }
@@ -52,12 +61,15 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const response = await authService.login({
-        email: formData.email,
-        password: formData.password,
-      });
+      // Sanitizar inputs
+      const sanitizedData = {
+        email: sanitizeInput(formData.email),
+        password: formData.password, // No sanitizar contraseña
+      };
 
-      // ✅ VERIFICACIÓN CORREGIDA - response ya es la data
+      const response = await authService.login(sanitizedData);
+
+      // Verificar si hay tempToken para 2FA
       if (response.success && response.data?.tempToken) {
         localStorage.setItem("tempToken", response.data.tempToken);
         router.push("/verify-2fa");
@@ -65,15 +77,17 @@ export default function Login() {
         setApiError(response.error || "Error en el inicio de sesión");
       }
     } catch (error: any) {
-      // ✅ MANEJO CORREGIDO DE ERROR 429
-      if (error.response?.status !== 401 && error.response?.status !== 429) {
+      // NO hacer console.error para errores esperados
+      const status = error.response?.status;
+      const EXPECTED_ERRORS = [401, 403, 429];
+
+      if (!EXPECTED_ERRORS.includes(status)) {
         console.error("Error en login:", error);
       }
 
+      // Manejo específico de errores
       if (error.response) {
-        const status = error.response.status;
         const errorData = error.response.data;
-
         const errorMessage =
           errorData?.error ||
           errorData?.message ||
@@ -115,19 +129,15 @@ export default function Login() {
         <meta name="description" content="Inicia sesión en tu cuenta" />
       </Head>
 
-      {/* Navbar */}
       <Navbar />
 
-      {/* Contenido principal */}
       <div className="min-h-screen flex bg-gray-50">
         {/* Lado Izquierdo - Bienvenida */}
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#3498db] to-[#2980b9] p-12 flex-col justify-center relative overflow-hidden">
-          {/* Decoración de fondo */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
 
           <div className="relative z-10 max-w-md mx-auto">
-            {/* Badge de seguridad */}
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -146,7 +156,6 @@ export default function Login() {
               </span>
             </div>
 
-            {/* Título principal */}
             <h1 className="text-4xl font-bold text-white mb-4">
               Bienvenido de vuelta a <span className="text-white">S</span>
               <span className="text-[#1a1a1a]">y</span>
@@ -158,7 +167,6 @@ export default function Login() {
               disfrutar de ofertas exclusivas.
             </p>
 
-            {/* Características */}
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -233,7 +241,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Estadísticas */}
             <div className="mt-12 grid grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-white mb-1">25+</div>
@@ -255,7 +262,6 @@ export default function Login() {
 
         {/* Lado Derecho - Formulario */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
-          {/* Logo en la esquina superior derecha */}
           <div className="absolute top-6 right-8 hidden lg:block">
             <Image
               src="/logoS.png"
@@ -267,7 +273,6 @@ export default function Login() {
           </div>
 
           <div className="w-full max-w-md">
-            {/* Logo móvil */}
             <div className="lg:hidden text-center mb-8">
               <h1 className="text-3xl font-bold">
                 <span className="text-gray-900">S</span>
@@ -277,7 +282,6 @@ export default function Login() {
               </h1>
             </div>
 
-            {/* Título del formulario */}
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-2">
                 Iniciar Sesión
@@ -287,7 +291,6 @@ export default function Login() {
               </p>
             </div>
 
-            {/* Alerta de error */}
             {apiError && (
               <div className="mb-6">
                 <Alert
@@ -300,9 +303,7 @@ export default function Login() {
               </div>
             )}
 
-            {/* Formulario */}
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
               <Input
                 label="Correo Electrónico"
                 type="email"
@@ -324,7 +325,6 @@ export default function Login() {
                 }
               />
 
-              {/* Contraseña */}
               <Input
                 label="Contraseña"
                 type="password"
@@ -350,7 +350,6 @@ export default function Login() {
                 }
               />
 
-              {/* Olvidaste contraseña */}
               <div className="flex justify-end">
                 <Link
                   href="/forgot-password"
@@ -360,7 +359,6 @@ export default function Login() {
                 </Link>
               </div>
 
-              {/* Botón submit */}
               <Button
                 type="submit"
                 variant="primary"
@@ -371,7 +369,6 @@ export default function Login() {
               </Button>
             </form>
 
-            {/* Registro */}
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 ¿No tienes una cuenta?{" "}
@@ -384,7 +381,6 @@ export default function Login() {
               </p>
             </div>
 
-            {/* Divider */}
             <div className="my-6">
               <div className="border-t border-gray-300"></div>
             </div>
@@ -392,7 +388,6 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Footer */}
       <Footer />
     </>
   );

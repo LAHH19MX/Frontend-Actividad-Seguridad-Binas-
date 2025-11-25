@@ -85,7 +85,7 @@ export default function VerifyRegistration() {
         // smsCode: ""
       });
 
-      console.log("✅ Verificación exitosa:", response);
+      console.log("Verificación exitosa:", response);
 
       setSuccessMessage(response.message);
 

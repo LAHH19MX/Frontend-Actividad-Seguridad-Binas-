@@ -1,22 +1,20 @@
 import axios from "axios";
 
 // URL base del backend
-const API_URL = "https://backend-actividad-seguridad-binas.onrender.com/api";
-//https://backend-actividad-seguridad-binas.onrender.com
-//
+const API_URL = "http://localhost:5000/api";
+
 // Crear instancia de axios
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // Para enviar cookies si las usas
+  withCredentials: true,
 });
 
 // Interceptor para agregar token JWT en cada request
 api.interceptors.request.use(
   (config) => {
-    // Obtener token de localStorage
     const token = localStorage.getItem("token");
 
     if (token) {
@@ -34,8 +32,23 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Solo redirigir en 401 si NO estamos en páginas públicas
-    if (error.response?.status === 401) {
+    // Errores esperados que NO deben mostrarse en consola
+    const EXPECTED_ERRORS = [
+      401, // Credenciales incorrectas
+      403, // Cuenta bloqueada
+      409, // Email/teléfono duplicado
+      429, // Rate limit
+    ];
+
+    const status = error.response?.status;
+
+    // Solo hacer console.error si NO es un error esperado
+    if (!EXPECTED_ERRORS.includes(status)) {
+      console.error("Error de API:", error);
+    }
+
+    // Manejo de redirección para 401 (solo en rutas protegidas)
+    if (status === 401) {
       const publicPaths = [
         "/login",
         "/register",
@@ -53,11 +66,6 @@ api.interceptors.response.use(
           window.location.href = "/login";
         }
       }
-
-      // ✅ NO console.error aquí - evita el log del error 401
-    } else {
-      // Para otros errores, sí muestra en consola
-      console.error("Error de API:", error);
     }
 
     return Promise.reject(error);
