@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// URL base del backend
-const API_URL = "http://localhost:5000/api";
+// URL base del backend - usa variable de entorno o fallback a localhost
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Crear instancia de axios
 const api = axios.create({
@@ -34,7 +34,7 @@ api.interceptors.response.use(
   (error) => {
     // Errores esperados que NO deben mostrarse en consola
     const EXPECTED_ERRORS = [
-      400, // Validaciones (código incorrecto, etc.) 👈 AGREGADO
+      400, // Validaciones (código incorrecto, etc.)
       401, // Credenciales incorrectas
       403, // Cuenta bloqueada
       409, // Email/teléfono duplicado
