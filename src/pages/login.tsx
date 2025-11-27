@@ -69,6 +69,19 @@ export default function Login() {
 
       const response = await authService.login(sanitizedData);
 
+      // 👇 NUEVO: Verificar si requiere verificación de cuenta
+      if (response.requiresVerification) {
+        // Guardar email para la página de verificación
+        localStorage.setItem("registerEmail", response.data.email);
+        // Mostrar mensaje
+        setApiError(response.error || "Cuenta no verificada. Redirigiendo...");
+        // Redirigir a verificación
+        setTimeout(() => {
+          router.push("/verify-registration");
+        }, 2000);
+        return;
+      }
+
       // Verificar si hay tempToken para 2FA
       if (response.success && response.data?.tempToken) {
         localStorage.setItem("tempToken", response.data.tempToken);
@@ -77,7 +90,6 @@ export default function Login() {
         setApiError(response.error || "Error en el inicio de sesión");
       }
     } catch (error: any) {
-      // NO hacer console.error para errores esperados
       const status = error.response?.status;
       const EXPECTED_ERRORS = [401, 403, 429];
 
@@ -85,9 +97,24 @@ export default function Login() {
         console.error("Error en login:", error);
       }
 
-      // Manejo específico de errores
       if (error.response) {
         const errorData = error.response.data;
+
+        // 👇 NUEVO: Manejar requiresVerification
+        if (errorData.requiresVerification) {
+          localStorage.setItem(
+            "registerEmail",
+            errorData.data?.email || formData.email
+          );
+          setApiError(
+            errorData.error || "Cuenta no verificada. Redirigiendo..."
+          );
+          setTimeout(() => {
+            router.push("/verify-registration");
+          }, 2000);
+          return;
+        }
+
         const errorMessage =
           errorData?.error ||
           errorData?.message ||

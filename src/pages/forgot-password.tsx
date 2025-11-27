@@ -11,6 +11,7 @@ import { isValidEmail } from "@/utils/validators";
 export default function ForgotPassword() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [method, setMethod] = useState<"code" | "link">("link"); // Por defecto enlace
   const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
@@ -47,25 +48,29 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      const response = await authService.forgotPassword({ email });
+      const response = await authService.forgotPassword({ email, method });
 
-      console.log("✅ Código de recuperación enviado:", response);
+      // console.log(`Recuperación enviada (${method}):`, response);
 
-      // ✅ VERIFICAR SI response.data EXISTE ANTES DE ACCEDER
-      if (response.data && response.data.tempToken) {
-        // Guardar token temporal
+      // Si es código, guardar datos y redirigir
+      if (method === "code" && response.data && response.data.tempToken) {
         localStorage.setItem("recoveryToken", response.data.tempToken);
         localStorage.setItem("recoveryEmail", email);
+
+        setSuccessMessage(response.message);
+
+        setTimeout(() => {
+          router.push("/verify-recovery");
+        }, 2000);
       }
-
-      setSuccessMessage(response.message);
-
-      // ✅ REDIRIGIR SIEMPRE (tanto si el email existe como si no)
-      setTimeout(() => {
-        router.push("/verify-recovery");
-      }, 2000);
+      // Si es enlace, solo mostrar mensaje
+      else if (method === "link") {
+        setSuccessMessage(
+          "Hemos enviado un enlace de recuperación a tu email. Válido por 5 minutos."
+        );
+      }
     } catch (error: any) {
-      console.error("❌ Error solicitando recuperación:", error);
+      console.error("Error solicitando recuperación:", error);
       const errorMessage =
         error.response?.data?.error ||
         "Error al solicitar recuperación de contraseña";
@@ -117,47 +122,95 @@ export default function ForgotPassword() {
             </p>
 
             <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">1</span>
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold mb-1">
-                    Ingresa tu email
-                  </h3>
-                  <p className="text-white/80 text-sm">
-                    Te enviaremos un código de verificación
-                  </p>
-                </div>
-              </div>
+              {method === "link" ? (
+                <>
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">1</span>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">
+                        Ingresa tu email
+                      </h3>
+                      <p className="text-white/80 text-sm">
+                        Te enviaremos un enlace seguro
+                      </p>
+                    </div>
+                  </div>
 
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">2</span>
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold mb-1">
-                    Verifica el código
-                  </h3>
-                  <p className="text-white/80 text-sm">
-                    Ingresa el código que recibiste por email o SMS
-                  </p>
-                </div>
-              </div>
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">2</span>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">
+                        Haz clic en el enlace
+                      </h3>
+                      <p className="text-white/80 text-sm">
+                        El enlace es válido por 5 minutos
+                      </p>
+                    </div>
+                  </div>
 
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">3</span>
-                </div>
-                <div>
-                  <h3 className="text-white font-semibold mb-1">
-                    Crea una nueva contraseña
-                  </h3>
-                  <p className="text-white/80 text-sm">
-                    Elige una contraseña segura y vuelve a acceder
-                  </p>
-                </div>
-              </div>
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">3</span>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">
+                        Crea una nueva contraseña
+                      </h3>
+                      <p className="text-white/80 text-sm">
+                        Elige una contraseña segura y vuelve a acceder
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">1</span>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">
+                        Ingresa tu email
+                      </h3>
+                      <p className="text-white/80 text-sm">
+                        Te enviaremos un código de verificación
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">2</span>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">
+                        Verifica el código
+                      </h3>
+                      <p className="text-white/80 text-sm">
+                        Ingresa el código que recibiste por email
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">3</span>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">
+                        Crea una nueva contraseña
+                      </h3>
+                      <p className="text-white/80 text-sm">
+                        Elige una contraseña segura y vuelve a acceder
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -189,8 +242,72 @@ export default function ForgotPassword() {
                 Recuperar Contraseña
               </h2>
               <p className="text-gray-600">
-                Ingresa tu email para recibir un código de recuperación
+                Elige cómo deseas recuperar tu contraseña
               </p>
+            </div>
+
+            {/* Selector de método */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Método de recuperación
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMethod("link")}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    method === "link"
+                      ? "border-[#3498db] bg-[#3498db]/10 text-[#3498db]"
+                      : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
+                  }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      />
+                    </svg>
+                    <span className="font-semibold text-sm">Enlace</span>
+                    <span className="text-xs opacity-75">Recomendado</span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setMethod("code")}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    method === "code"
+                      ? "border-[#3498db] bg-[#3498db]/10 text-[#3498db]"
+                      : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
+                  }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+                      />
+                    </svg>
+                    <span className="font-semibold text-sm">Código</span>
+                    <span className="text-xs opacity-75">6 dígitos</span>
+                  </div>
+                </button>
+              </div>
             </div>
 
             {apiError && (
@@ -232,7 +349,7 @@ export default function ForgotPassword() {
                 isLoading={isLoading}
                 className="w-full"
               >
-                Enviar Código
+                {method === "link" ? "Enviar Enlace" : "Enviar Código"}
               </Button>
             </form>
 
@@ -241,10 +358,10 @@ export default function ForgotPassword() {
                 href="/login"
                 className="text-[#3498db] hover:text-[#2980b9] font-semibold text-sm"
               >
-                Volver
+                Volver al login
               </Link>
             </div>
-            {/* Divider */}
+
             <div className="my-6">
               <div className="border-t border-gray-300"></div>
             </div>

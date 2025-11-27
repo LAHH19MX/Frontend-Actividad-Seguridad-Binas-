@@ -74,7 +74,7 @@ export default function ResetPassword() {
         confirmPassword: formData.confirmPassword,
       });
 
-      console.log("✅ Contraseña cambiada:", response);
+      console.log("Contraseña cambiada:", response);
 
       setSuccessMessage(response.message);
 

@@ -22,7 +22,7 @@ export const isInputSafe = (input: string): boolean => {
  * Obtiene mensaje de error para inputs no seguros
  */
 export const getSafeInputError = (): string => {
-  return "No se permiten los caracteres: < > ' \" ` ; \\";
+  return "No se permiten los caracteres: < > ' \" ` ; \\ ‘ '";
 };
 
 // Regex para validar email

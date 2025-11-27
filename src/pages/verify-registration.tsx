@@ -82,7 +82,6 @@ export default function VerifyRegistration() {
       const response = await authService.verifyRegistration({
         email,
         emailCode: emailCode,
-        // smsCode: ""
       });
 
       console.log("Verificación exitosa:", response);
@@ -97,10 +96,15 @@ export default function VerifyRegistration() {
         router.push("/login");
       }, 2000);
     } catch (error: any) {
-      console.error("❌ Error en verificación:", error);
+      // Capturar TODOS los errores sin propagarlos
       const errorMessage =
         error.response?.data?.error || "Error al verificar cuenta";
       setApiError(errorMessage);
+
+      // Solo logear errores inesperados (500, network, etc.)
+      if (!error.response || error.response.status >= 500) {
+        console.error("Error inesperado en verificación:", error);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -259,7 +263,7 @@ export default function VerifyRegistration() {
               onClick={() => router.push("/register")}
               className="text-gray-600 hover:text-[#3498db] text-sm font-medium transition-colors"
             >
-              ← Volver al registro
+              Volver al registro
             </button>
           </div>
         </div>

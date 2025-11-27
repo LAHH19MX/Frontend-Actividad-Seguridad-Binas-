@@ -12,7 +12,6 @@ export interface RegisterData {
 export interface VerifyRegistrationData {
   email: string;
   emailCode: string;
-  // smsCode: string;
 }
 
 export interface LoginData {
@@ -32,6 +31,7 @@ export interface Resend2FAData {
 
 export interface ForgotPasswordData {
   email: string;
+  method?: "code" | "link";
 }
 
 export interface VerifyRecoveryCodeData {
@@ -41,6 +41,13 @@ export interface VerifyRecoveryCodeData {
 
 export interface ResetPasswordData {
   resetToken: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+// TIPOS PARA RESET CON ENLACE
+export interface ResetPasswordWithLinkData {
+  tempToken: string;
   newPassword: string;
   confirmPassword: string;
 }
@@ -83,6 +90,18 @@ const authService = {
     return response.data;
   },
 
+  // VERIFICAR TOKEN DE RESET (ENLACE)
+  verifyResetToken: async (resetId: string) => {
+    const response = await api.get(`/auth/verify-reset-id/${resetId}`);
+    return response.data;
+  },
+
+  // CAMBIAR CONTRASEÑA CON ENLACE
+  resetPasswordWithLink: async (data: ResetPasswordWithLinkData) => {
+    const response = await api.post("/auth/reset-password-link", data);
+    return response.data;
+  },
+
   // Reenviar código de recuperación
   resendRecoveryCode: async (data: Resend2FAData) => {
     const response = await api.post("/auth/resend-recovery-code", data);
@@ -95,7 +114,7 @@ const authService = {
     return response.data;
   },
 
-  // Resetear contraseña
+  // Resetear contraseña (con código)
   resetPassword: async (data: ResetPasswordData) => {
     const response = await api.post("/auth/reset-password", data);
     return response.data;

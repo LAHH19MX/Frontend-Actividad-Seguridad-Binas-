@@ -93,20 +93,32 @@ export default function Verify2FA() {
 
       setSuccessMessage("Login exitoso. Redirigiendo...");
     } catch (error: any) {
-      console.error("❌ Error en verificación 2FA:", error);
+      // Capturar todos los errores sin propagarlos
       const errorMessage =
         error.response?.data?.error || "Error al verificar código";
       setApiError(errorMessage);
+
+      // Mostrar intentos restantes si están disponibles
+      const attemptsLeft = error.response?.data?.attemptsLeft;
+      if (attemptsLeft !== undefined) {
+        setApiError(`${errorMessage}. Intentos restantes: ${attemptsLeft}`);
+      }
+
+      // Solo logear errores inesperados (500+, network, etc.)
+      const status = error.response?.status;
+      if (!status || status >= 500) {
+        console.error("Error inesperado en verificación 2FA:", error);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // ✅ CAMBIO: Función simplificada - solo email
   const handleResend = async () => {
     setApiError("");
     setSuccessMessage("");
     setIsResending(true);
+    setCode("");
 
     try {
       const response = await authService.resend2FA({
@@ -115,13 +127,21 @@ export default function Verify2FA() {
       });
 
       console.log("✅ Código reenviado por email");
-      setSuccessMessage("Código reenviado a tu email");
-      setTimeLeft(300); // Reiniciar timer
+      setSuccessMessage(
+        "Código reenviado a tu email. Ingresa el nuevo código."
+      );
+      setTimeLeft(300);
     } catch (error: any) {
-      console.error("❌ Error reenviando código:", error);
+      // Capturar TODOS los errores sin propagarlos
       const errorMessage =
         error.response?.data?.error || "Error al reenviar código";
       setApiError(errorMessage);
+
+      // Solo logear errores inesperados (500+)
+      const status = error.response?.status;
+      if (!status || status >= 500) {
+        console.error("Error inesperado reenviando código:", error);
+      }
     } finally {
       setIsResending(false);
     }

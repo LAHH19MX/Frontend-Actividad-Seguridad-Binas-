@@ -34,6 +34,7 @@ api.interceptors.response.use(
   (error) => {
     // Errores esperados que NO deben mostrarse en consola
     const EXPECTED_ERRORS = [
+      400, // Validaciones (código incorrecto, etc.) 👈 AGREGADO
       401, // Credenciales incorrectas
       403, // Cuenta bloqueada
       409, // Email/teléfono duplicado
