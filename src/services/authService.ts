@@ -52,6 +52,16 @@ export interface ResetPasswordWithLinkData {
   confirmPassword: string;
 }
 
+export interface ForgotPasswordSecurityData {
+  email: string;
+  method: "security_question";
+}
+
+export interface VerifySecurityAnswerData {
+  tempToken: string;
+  answer: string;
+}
+
 // Servicio de autenticación
 const authService = {
   // Registro
@@ -135,6 +145,16 @@ const authService = {
   // Refrescar token
   refreshToken: async () => {
     const response = await api.post("/auth/refresh-token");
+    return response.data;
+  },
+
+  forgotPasswordWithSecurity: async (data: ForgotPasswordSecurityData) => {
+    const response = await api.post("/auth/forgot-password-security", data);
+    return response.data;
+  },
+
+  verifySecurityAnswer: async (data: VerifySecurityAnswerData) => {
+    const response = await api.post("/auth/verify-security-answer", data);
     return response.data;
   },
 };

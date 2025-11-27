@@ -11,7 +11,7 @@ import { isValidEmail } from "@/utils/validators";
 export default function ForgotPassword() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [method, setMethod] = useState<"code" | "link">("link"); // Por defecto enlace
+  const [method, setMethod] = useState<"link" | "security_question">("link");
   const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
@@ -48,23 +48,39 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      const response = await authService.forgotPassword({ email, method });
+      // FLUJO NUEVO: PREGUNTA SECRETA
+      if (method === "security_question") {
+        const response = await authService.forgotPasswordWithSecurity({
+          email,
+          method: "security_question",
+        });
 
-      // console.log(`Recuperación enviada (${method}):`, response);
+        // Mensaje genérico (seguridad)
+        setSuccessMessage(
+          "Si el email está registrado y tiene pregunta de seguridad configurada, podrás responderla."
+        );
 
-      // Si es código, guardar datos y redirigir
-      if (method === "code" && response.data && response.data.tempToken) {
-        localStorage.setItem("recoveryToken", response.data.tempToken);
-        localStorage.setItem("recoveryEmail", email);
+        // Si tiene pregunta de seguridad, redirigir
+        if (response.data && response.data.hasSecurityQuestion) {
+          localStorage.setItem("securityToken", response.data.tempToken);
+          localStorage.setItem("securityEmail", email);
+          localStorage.setItem(
+            "securityQuestion",
+            response.data.securityQuestion
+          );
 
-        setSuccessMessage(response.message);
-
-        setTimeout(() => {
-          router.push("/verify-recovery");
-        }, 2000);
+          setTimeout(() => {
+            router.push("/security-question");
+          }, 2000);
+        }
       }
-      // Si es enlace, solo mostrar mensaje
-      else if (method === "link") {
+      // FLUJO EXISTENTE: ENLACE
+      else {
+        const response = await authService.forgotPassword({
+          email,
+          method: "link",
+        });
+
         setSuccessMessage(
           "Hemos enviado un enlace de recuperación a tu email. Válido por 5 minutos."
         );
@@ -167,6 +183,7 @@ export default function ForgotPassword() {
                   </div>
                 </>
               ) : (
+                // MÉTODO PREGUNTA SECRETA
                 <>
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -177,7 +194,7 @@ export default function ForgotPassword() {
                         Ingresa tu email
                       </h3>
                       <p className="text-white/80 text-sm">
-                        Te enviaremos un código de verificación
+                        Verificaremos si tienes pregunta de seguridad
                       </p>
                     </div>
                   </div>
@@ -188,10 +205,10 @@ export default function ForgotPassword() {
                     </div>
                     <div>
                       <h3 className="text-white font-semibold mb-1">
-                        Verifica el código
+                        Responde tu pregunta
                       </h3>
                       <p className="text-white/80 text-sm">
-                        Ingresa el código que recibiste por email
+                        Contesta la pregunta de seguridad que elegiste
                       </p>
                     </div>
                   </div>
@@ -199,6 +216,20 @@ export default function ForgotPassword() {
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                       <span className="text-white font-bold text-lg">3</span>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-semibold mb-1">
+                        Recibe y verifica el código
+                      </h3>
+                      <p className="text-white/80 text-sm">
+                        Te enviaremos un código por email para continuar
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">4</span>
                     </div>
                     <div>
                       <h3 className="text-white font-semibold mb-1">
@@ -280,11 +311,12 @@ export default function ForgotPassword() {
                   </div>
                 </button>
 
+                {/* REEMPLAZO: Pregunta secreta en lugar de código directo */}
                 <button
                   type="button"
-                  onClick={() => setMethod("code")}
+                  onClick={() => setMethod("security_question")}
                   className={`p-4 rounded-lg border-2 transition-all ${
-                    method === "code"
+                    method === "security_question"
                       ? "border-[#3498db] bg-[#3498db]/10 text-[#3498db]"
                       : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
                   }`}
@@ -300,11 +332,11 @@ export default function ForgotPassword() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    <span className="font-semibold text-sm">Código</span>
-                    <span className="text-xs opacity-75">6 dígitos</span>
+                    <span className="font-semibold text-sm">Pregunta</span>
+                    <span className="text-xs opacity-75">Secreta</span>
                   </div>
                 </button>
               </div>
@@ -349,7 +381,7 @@ export default function ForgotPassword() {
                 isLoading={isLoading}
                 className="w-full"
               >
-                {method === "link" ? "Enviar Enlace" : "Enviar Código"}
+                {method === "link" ? "Enviar Enlace" : "Continuar con Pregunta"}
               </Button>
             </form>
 

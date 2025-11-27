@@ -16,6 +16,32 @@ import {
   getSafeInputError,
 } from "@/utils/validators";
 
+// Preguntas de seguridad (deben coincidir con las del backend)
+const SECURITY_QUESTIONS = [
+  { id: "pet_name", question: "¿Cuál es el nombre de tu primera mascota?" },
+  { id: "birth_city", question: "¿En qué ciudad naciste?" },
+  {
+    id: "mother_maiden",
+    question: "¿Cuál es tu color favorito?",
+  },
+  {
+    id: "first_school",
+    question: "¿Cuál fue el nombre de tu primera escuela?",
+  },
+  {
+    id: "childhood_friend",
+    question: "¿Cómo se llamaba tu mejor amigo/a de la infancia?",
+  },
+  { id: "first_car", question: "¿Cuál fue la marca de tu primer auto?" },
+  {
+    id: "favorite_teacher",
+    question: "¿Cómo se llamaba tu maestro/a favorito/a?",
+  },
+  { id: "first_job", question: "¿Cuál fue tu primer trabajo?" },
+  { id: "favorite_book", question: "¿Cuál es el título de tu libro favorito?" },
+  { id: "childhood_nickname", question: "¿Cuál era tu apodo en la infancia?" },
+];
+
 export default function Register() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -24,7 +50,9 @@ export default function Register() {
     phone: "", // Solo los 10 dígitos
     password: "",
     confirmPassword: "",
-    acceptTerms: false, // Nuevo campo
+    securityQuestion: "", // Nuevo campo: pregunta de seguridad
+    securityAnswer: "", // Nuevo campo: respuesta de seguridad
+    acceptTerms: false,
   });
   const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +65,17 @@ export default function Register() {
     const newValue = type === "checkbox" ? checked : value;
 
     setFormData((prev) => ({ ...prev, [name]: newValue }));
+
+    if (errors[name]) {
+      setErrors((prev: any) => ({ ...prev, [name]: "" }));
+    }
+    setApiError("");
+  };
+
+  // Manejar cambios en el select de pregunta de seguridad
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (errors[name]) {
       setErrors((prev: any) => ({ ...prev, [name]: "" }));
@@ -77,7 +116,7 @@ export default function Register() {
       newErrors.password = "La contraseña es obligatoria";
     } else if (!isValidPassword(formData.password)) {
       newErrors.password =
-        "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial (@$!%*?&#/)";
+        "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial valido(@$!%*?&#/)";
     }
 
     // Validar confirmación de contraseña
@@ -85,6 +124,23 @@ export default function Register() {
       newErrors.confirmPassword = "Confirma tu contraseña";
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Las contraseñas no coinciden";
+    }
+
+    // Validar pregunta de seguridad
+    if (!formData.securityQuestion) {
+      newErrors.securityQuestion =
+        "Debes seleccionar una pregunta de seguridad";
+    }
+
+    // Validar respuesta de seguridad
+    if (!formData.securityAnswer.trim()) {
+      newErrors.securityAnswer = "La respuesta de seguridad es obligatoria";
+    } else if (formData.securityAnswer.trim().length < 2) {
+      newErrors.securityAnswer =
+        "La respuesta debe tener al menos 2 caracteres";
+    } else if (formData.securityAnswer.trim().length > 100) {
+      newErrors.securityAnswer =
+        "La respuesta no puede tener más de 100 caracteres";
     }
 
     // Validar términos y condiciones
@@ -112,12 +168,12 @@ export default function Register() {
         phone: `+52${formData.phone}`, // Agregar +52 automáticamente
         password: formData.password, // La contraseña NO se sanitiza
         confirmPassword: formData.confirmPassword,
+        securityQuestion: formData.securityQuestion, // Nuevo campo
+        securityAnswer: formData.securityAnswer, // Nuevo campo
         // acceptTerms NO se envía al backend
       };
 
       const response = await authService.register(sanitizedData);
-
-      console.log("✅ Registro exitoso:", response);
 
       // Guardar email para la siguiente pantalla
       localStorage.setItem("registerEmail", formData.email);
@@ -332,6 +388,64 @@ export default function Register() {
                         <path
                           fillRule="evenodd"
                           d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    }
+                  />
+
+                  {/* NUEVA SECCIÓN: PREGUNTA DE SEGURIDAD */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Pregunta de Seguridad
+                    </label>
+                    <select
+                      name="securityQuestion"
+                      value={formData.securityQuestion}
+                      onChange={handleSelectChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#3498db] focus:border-[#3498db] transition-colors ${
+                        errors.securityQuestion
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <option value="">
+                        Selecciona una pregunta de seguridad
+                      </option>
+                      {SECURITY_QUESTIONS.map((q) => (
+                        <option key={q.id} value={q.id}>
+                          {q.question}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.securityQuestion && (
+                      <p className="text-red-500 text-sm mt-2">
+                        {errors.securityQuestion}
+                      </p>
+                    )}
+                    <p className="text-sm text-gray-500 mt-1">
+                      Esta pregunta te ayudará a recuperar tu cuenta si olvidas
+                      tu contraseña.
+                    </p>
+                  </div>
+
+                  <Input
+                    label="Respuesta de Seguridad"
+                    type="text"
+                    name="securityAnswer"
+                    placeholder="Tu respuesta"
+                    value={formData.securityAnswer}
+                    onChange={handleChange}
+                    error={errors.securityAnswer}
+                    icon={
+                      <svg
+                        className="h-5 w-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
                           clipRule="evenodd"
                         />
                       </svg>
