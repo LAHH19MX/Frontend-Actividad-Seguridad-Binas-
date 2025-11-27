@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Crear instancia de axios
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: "https://backend-actividad-seguridad-binas.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
