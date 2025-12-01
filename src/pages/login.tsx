@@ -11,9 +11,11 @@ import {
   isInputSafe,
   getSafeInputError,
 } from "@/utils/validators";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
   const router = useRouter();
+  const { setTempToken } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -64,18 +66,15 @@ export default function Login() {
       // Sanitizar inputs
       const sanitizedData = {
         email: sanitizeInput(formData.email),
-        password: formData.password, // No sanitizar contraseña
+        password: formData.password,
       };
 
       const response = await authService.login(sanitizedData);
 
-      // 👇 NUEVO: Verificar si requiere verificación de cuenta
+      // Verificar si requiere verificación de cuenta
       if (response.requiresVerification) {
-        // Guardar email para la página de verificación
         localStorage.setItem("registerEmail", response.data.email);
-        // Mostrar mensaje
         setApiError(response.error || "Cuenta no verificada. Redirigiendo...");
-        // Redirigir a verificación
         setTimeout(() => {
           router.push("/verify-registration");
         }, 2000);
@@ -84,7 +83,8 @@ export default function Login() {
 
       // Verificar si hay tempToken para 2FA
       if (response.success && response.data?.tempToken) {
-        localStorage.setItem("tempToken", response.data.tempToken);
+        // 👇 MODIFICADO: Usar contexto en lugar de localStorage
+        setTempToken(response.data.tempToken);
         router.push("/verify-2fa");
       } else {
         setApiError(response.error || "Error en el inicio de sesión");
@@ -100,7 +100,7 @@ export default function Login() {
       if (error.response) {
         const errorData = error.response.data;
 
-        // 👇 NUEVO: Manejar requiresVerification
+        // Manejar requiresVerification
         if (errorData.requiresVerification) {
           localStorage.setItem(
             "registerEmail",
@@ -149,6 +149,7 @@ export default function Login() {
     }
   };
 
+  // 🚀 EL RESTO DEL CÓDIGO PERMANECE IGUAL
   return (
     <>
       <Head>

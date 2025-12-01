@@ -1,24 +1,48 @@
 import axios from "axios";
 
-// URL base del backend - usa variable de entorno o fallback a localhost
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// Función para obtener CSRF token de las cookies
+const getCSRFToken = (): string | null => {
+  if (typeof document === "undefined") return null;
+
+  const cookies = document.cookie.split(";");
+  for (let cookie of cookies) {
+    const [name, value] = cookie.trim().split("=");
+    if (name === "csrf_token") {
+      return decodeURIComponent(value);
+    }
+  }
+  return null;
+};
+
+const API_URL = "http://localhost:5000/api";
 
 // Crear instancia de axios
 const api = axios.create({
-  baseURL: "https://backend-actividad-seguridad-binas.onrender.com/api",
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
   withCredentials: true,
 });
 
-// Interceptor para agregar token JWT en cada request
+// Interceptor para agregar token CSRF
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    // Solo agregar CSRF token a métodos que modifican datos
+    const method = config.method?.toLowerCase();
+    if (method && ["post", "put", "delete", "patch"].includes(method)) {
+      const csrfToken = getCSRFToken();
+      if (csrfToken) {
+        config.headers["X-CSRF-Token"] = csrfToken;
+      }
+    }
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Logging para debugging
+    if (process.env.NODE_ENV === "development") {
+      console.log(``, {
+        withCredentials: config.withCredentials,
+        headers: config.headers,
+      });
     }
 
     return config;
@@ -30,25 +54,30 @@ api.interceptors.request.use(
 
 // Interceptor para manejar errores de respuesta
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (process.env.NODE_ENV === "development") {
+      console.log(``, response.data);
+    }
+    return response;
+  },
   (error) => {
     // Errores esperados que NO deben mostrarse en consola
-    const EXPECTED_ERRORS = [
-      400, // Validaciones (código incorrecto, etc.)
-      401, // Credenciales incorrectas
-      403, // Cuenta bloqueada
-      409, // Email/teléfono duplicado
-      429, // Rate limit
-    ];
+    const EXPECTED_ERRORS = [400, 401, 403, 409, 429, 404];
 
     const status = error.response?.status;
 
-    // Solo hacer console.error si NO es un error esperado
-    if (!EXPECTED_ERRORS.includes(status)) {
-      console.error("Error de API:", error);
+    // Solo logear errores inesperados
+    if (status && !EXPECTED_ERRORS.includes(status)) {
+      console.error("Error de API:", {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      });
     }
 
-    // Manejo de redirección para 401 (solo en rutas protegidas)
+    // Manejo de redirección para 401
     if (status === 401) {
       const publicPaths = [
         "/login",
@@ -61,8 +90,8 @@ api.interceptors.response.use(
         typeof window !== "undefined" ? window.location.pathname : "";
 
       if (!publicPaths.includes(currentPath)) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        document.cookie =
+          "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }

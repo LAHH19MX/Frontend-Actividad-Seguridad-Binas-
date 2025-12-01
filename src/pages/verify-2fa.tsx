@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Verify2FA() {
   const router = useRouter();
-  const [tempToken, setTempToken] = useState("");
+  const { tempToken, verify2FA, setTempToken } = useAuth();
   const [code, setCode] = useState("");
   const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -17,16 +17,14 @@ export default function Verify2FA() {
   const [apiError, setApiError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutos
-  const { login } = useAuth();
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
-    // Obtener tempToken del localStorage
-    const savedToken = localStorage.getItem("tempToken");
-    if (!savedToken) {
+    // Verificar tempToken del contexto
+    if (!tempToken) {
       router.push("/login");
       return;
     }
-    setTempToken(savedToken);
 
     // Timer de 5 minutos
     const timer = setInterval(() => {
@@ -40,7 +38,7 @@ export default function Verify2FA() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [router]);
+  }, [tempToken, router]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -75,36 +73,45 @@ export default function Verify2FA() {
     e.preventDefault();
     setApiError("");
     setSuccessMessage("");
+    setHasRedirected(false);
 
     if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
-      const response = await authService.verify2FA({
-        tempToken,
-        code,
-      });
+      console.log("🔄 Verificando 2FA...");
+      const response = await verify2FA(code);
 
-      console.log("✅ 2FA verificado:", response);
+      console.log("✅ verify2FA exitoso:", response);
+      setSuccessMessage("¡Verificación exitosa! Redirigiendo...");
 
-      login(response.data.token, response.data.user);
-      localStorage.removeItem("tempToken");
+      // Marcar que ya se intentó redirigir
+      setHasRedirected(true);
 
-      setSuccessMessage("Login exitoso. Redirigiendo...");
+      // Redirección de respaldo por si falla la automática
+      setTimeout(() => {
+        if (
+          !hasRedirected &&
+          window.location.pathname.includes("/verify-2fa")
+        ) {
+          console.log(
+            "⚠️ Redirección automática fallida, redirigiendo manualmente..."
+          );
+          router.push("/dashboard/cliente");
+        }
+      }, 3000);
     } catch (error: any) {
-      // Capturar todos los errores sin propagarlos
+      console.error("❌ Error en verify2FA:", error);
       const errorMessage =
         error.response?.data?.error || "Error al verificar código";
       setApiError(errorMessage);
 
-      // Mostrar intentos restantes si están disponibles
       const attemptsLeft = error.response?.data?.attemptsLeft;
       if (attemptsLeft !== undefined) {
         setApiError(`${errorMessage}. Intentos restantes: ${attemptsLeft}`);
       }
 
-      // Solo logear errores inesperados (500+, network, etc.)
       const status = error.response?.status;
       if (!status || status >= 500) {
         console.error("Error inesperado en verificación 2FA:", error);
@@ -115,6 +122,11 @@ export default function Verify2FA() {
   };
 
   const handleResend = async () => {
+    if (!tempToken) {
+      setApiError("No hay token temporal disponible");
+      return;
+    }
+
     setApiError("");
     setSuccessMessage("");
     setIsResending(true);
@@ -132,12 +144,10 @@ export default function Verify2FA() {
       );
       setTimeLeft(300);
     } catch (error: any) {
-      // Capturar TODOS los errores sin propagarlos
       const errorMessage =
         error.response?.data?.error || "Error al reenviar código";
       setApiError(errorMessage);
 
-      // Solo logear errores inesperados (500+)
       const status = error.response?.status;
       if (!status || status >= 500) {
         console.error("Error inesperado reenviando código:", error);
@@ -158,9 +168,7 @@ export default function Verify2FA() {
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center py-12 px-4">
         <div className="max-w-md w-full">
-          {/* Card principal */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
-            {/* Icono de seguridad */}
             <div className="flex justify-center mb-6">
               <div className="w-20 h-20 bg-gradient-to-br from-[#3498db] to-[#2980b9] rounded-full flex items-center justify-center animate-pulse">
                 <svg
@@ -179,7 +187,6 @@ export default function Verify2FA() {
               </div>
             </div>
 
-            {/* Título */}
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 Verificación de Seguridad
@@ -189,7 +196,6 @@ export default function Verify2FA() {
               </p>
             </div>
 
-            {/* Timer */}
             <div className="bg-gradient-to-r from-[#3498db]/10 to-[#2980b9]/10 rounded-lg p-4 mb-6 border border-[#3498db]/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -222,7 +228,6 @@ export default function Verify2FA() {
               </div>
             </div>
 
-            {/* Alertas */}
             {apiError && (
               <div className="mb-6">
                 <Alert type="error" message={apiError} />
@@ -235,7 +240,6 @@ export default function Verify2FA() {
               </div>
             )}
 
-            {/* Formulario */}
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -265,7 +269,6 @@ export default function Verify2FA() {
               </Button>
             </form>
 
-            {/* ✅ CAMBIO: Botón único de reenvío por email */}
             <div className="mt-6 space-y-3">
               <p className="text-sm text-gray-600 text-center">
                 ¿No recibiste el código?
@@ -293,7 +296,6 @@ export default function Verify2FA() {
               </button>
             </div>
 
-            {/* Info de seguridad */}
             <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
               <div className="flex gap-3">
                 <svg
@@ -320,11 +322,10 @@ export default function Verify2FA() {
             </div>
           </div>
 
-          {/* Link para cancelar */}
           <div className="mt-6 text-center">
             <button
               onClick={() => {
-                localStorage.removeItem("tempToken");
+                setTempToken(null);
                 router.push("/login");
               }}
               className="text-gray-600 hover:text-[#3498db] text-sm font-medium transition-colors"

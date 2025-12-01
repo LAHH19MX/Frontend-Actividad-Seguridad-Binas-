@@ -130,7 +130,7 @@ const authService = {
     return response.data;
   },
 
-  // Obtener perfil (requiere JWT)
+  // Obtener perfil
   getProfile: async () => {
     const response = await api.get("/user/profile");
     return response.data;
@@ -138,7 +138,7 @@ const authService = {
 
   // Logout
   logout: async () => {
-    const response = await api.post("/auth/logout");
+    const response = await api.post("/user/logout");
     return response.data;
   },
 
