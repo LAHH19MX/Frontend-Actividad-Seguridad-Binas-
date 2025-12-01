@@ -18,11 +18,6 @@ export default function Home() {
   // Prueba con usuario NO autenticado
   const isAuthenticated = false;
 
-  // Para probar con usuario autenticado, descomentar:
-  // const isAuthenticated = true;
-  // const user = { name: "Juan Pérez", role: "CLIENTE" as const };
-  // const user = { name: "Admin", role: "ADMIN" as const };
-
   return (
     <>
       <Head>

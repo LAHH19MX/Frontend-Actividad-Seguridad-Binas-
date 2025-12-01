@@ -80,7 +80,6 @@ export default function Verify2FA() {
     setIsLoading(true);
 
     try {
-      console.log("🔄 Verificando 2FA...");
       const response = await verify2FA(code);
 
       console.log("✅ verify2FA exitoso:", response);

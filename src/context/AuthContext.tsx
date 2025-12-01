@@ -106,8 +106,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         code,
       });
 
-      console.log("✅ verify2FA response:", response);
-
       if (response.success) {
         // 1. Primero actualizar el estado local INMEDIATAMENTE
         if (response.data?.user) {
@@ -123,8 +121,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         // 3. Obtener rol para redirección
         const userRole = response.data?.user?.role || user?.role;
-        console.log("🔀 Rol para redirección:", userRole);
-        console.log("📍 Ruta actual del router:", router.pathname);
 
         // 4. Forzar redirección con window.location como FALLBACK
         const targetPath =
@@ -134,7 +130,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Intentar con router.push primero
         try {
           router.push(targetPath);
-          console.log("✅ router.push() ejecutado");
         } catch (routerError) {
           console.error("❌ Error en router.push:", routerError);
         }
