@@ -24,7 +24,6 @@ export default function ProtectedRoute({
 
     // Si requiere autenticación y no está autenticado
     if (requireAuth && !isAuthenticated) {
-      console.log("⚠️  Usuario no autenticado, redirigiendo al login");
       router.push(redirectTo || "/login");
       return;
     }
