@@ -24,8 +24,6 @@ const Navbar: React.FC<NavbarProps> = ({
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Buscando:", searchQuery);
-    // Aquí iría la lógica de búsqueda (estática por ahora)
   };
 
   return (

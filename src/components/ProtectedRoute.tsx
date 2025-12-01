@@ -30,10 +30,6 @@ export default function ProtectedRoute({
 
     // Si requiere un rol específico y no lo tiene
     if (requireRole && user?.role !== requireRole) {
-      console.log(
-        `⚠️  Usuario con rol ${user?.role} intentando acceder a ruta de ${requireRole}`
-      );
-
       // Redirigir al dashboard correcto según su rol
       if (user?.role === "ADMIN") {
         router.push("/dashboard/admin");
