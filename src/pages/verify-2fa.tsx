@@ -82,7 +82,6 @@ export default function Verify2FA() {
     try {
       const response = await verify2FA(code);
 
-      console.log("✅ verify2FA exitoso:", response);
       setSuccessMessage("¡Verificación exitosa! Redirigiendo...");
 
       // Marcar que ya se intentó redirigir
@@ -101,9 +100,7 @@ export default function Verify2FA() {
         }
       }, 3000);
     } catch (error: any) {
-      console.error("❌ Error en verify2FA:", error);
-      const errorMessage =
-        error.response?.data?.error || "Error al verificar código";
+      const errorMessage = error.response?.data?.error || "";
       setApiError(errorMessage);
 
       const attemptsLeft = error.response?.data?.attemptsLeft;

@@ -167,7 +167,7 @@ export default function DashboardCliente() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              👋 Bienvenido, {user?.name}
+              Bienvenido, {user?.name}
             </h1>
             <p className="text-gray-600">
               Este es tu panel de control personal
@@ -179,7 +179,7 @@ export default function DashboardCliente() {
               onClick={() => setShowConfig(true)}
               className="px-6 py-2 bg-[#3498db] text-white rounded-lg font-semibold hover:bg-[#2980b9] transition-colors"
             >
-              ⚙️ Ver Configuración
+              Ver Configuración
             </button>
           </div>
 
@@ -205,7 +205,7 @@ export default function DashboardCliente() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
-                📦 Últimos Pedidos
+                Últimos Pedidos
               </h2>
               <button className="text-[#3498db] hover:text-[#2980b9] font-semibold">
                 Ver todos →

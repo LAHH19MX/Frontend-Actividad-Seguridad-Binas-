@@ -125,7 +125,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // 4. Forzar redirección con window.location como FALLBACK
         const targetPath =
           userRole === "ADMIN" ? "/dashboard/admin" : "/dashboard/cliente";
-        console.log("🎯 Intentando redirigir a:", targetPath);
 
         // Intentar con router.push primero
         try {
@@ -150,7 +149,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return response;
     } catch (error: any) {
-      console.error("❌ Error en verify2FA:", error);
       throw error;
     }
   };
