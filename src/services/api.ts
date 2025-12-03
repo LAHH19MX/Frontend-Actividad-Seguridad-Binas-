@@ -78,6 +78,20 @@ api.interceptors.response.use(
   }
 );
 
+api.interceptors.request.use((config) => {
+  if (
+    ["POST", "PUT", "DELETE", "PATCH"].includes(
+      config.method?.toUpperCase() || ""
+    )
+  ) {
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+      config.headers["X-CSRF-Token"] = csrfToken;
+    }
+  }
+  return config;
+});
+
 // Interceptor para manejar errores de respuesta
 api.interceptors.response.use(
   (response) => {
