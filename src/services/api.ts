@@ -25,7 +25,32 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Interceptor para manejar errores de respuesta
+// ✅ INTERCEPTOR DE REQUEST (DEBE IR PRIMERO)
+api.interceptors.request.use(
+  (config) => {
+    // Solo agregar CSRF token a métodos que modifican datos
+    const method = config.method?.toUpperCase();
+    if (method && ["POST", "PUT", "DELETE", "PATCH"].includes(method)) {
+      const csrfToken = getCSRFToken();
+      if (csrfToken) {
+        config.headers["X-CSRF-Token"] = csrfToken;
+        console.log(
+          "🔒 CSRF Token agregado al header:",
+          csrfToken.substring(0, 10) + "..."
+        );
+      } else {
+        console.warn("⚠️ No se encontró CSRF token en las cookies");
+      }
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// ✅ INTERCEPTOR DE RESPONSE (SOLO UNO)
 api.interceptors.response.use(
   (response) => {
     if (process.env.NODE_ENV === "development") {
@@ -35,75 +60,6 @@ api.interceptors.response.use(
   },
   (error) => {
     const EXPECTED_ERRORS = [400, 401, 403, 409, 429, 404];
-    const status = error.response?.status;
-
-    if (status && !EXPECTED_ERRORS.includes(status)) {
-      console.error("Error de API:", {
-        url: error.config?.url,
-        method: error.config?.method,
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message,
-      });
-    }
-
-    // 👇 MEJORAR: Manejo de 401
-    if (status === 401) {
-      const publicPaths = [
-        "/login",
-        "/register",
-        "/forgot-password",
-        "/verify-registration",
-        "/verify-2fa",
-      ];
-      const currentPath =
-        typeof window !== "undefined" ? window.location.pathname : "";
-
-      if (!publicPaths.includes(currentPath)) {
-        // Limpiar TODO
-        if (typeof document !== "undefined") {
-          document.cookie =
-            "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-          document.cookie =
-            "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        }
-        if (typeof window !== "undefined") {
-          localStorage.clear();
-          window.location.href = "/login";
-        }
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
-
-api.interceptors.request.use((config) => {
-  if (
-    ["POST", "PUT", "DELETE", "PATCH"].includes(
-      config.method?.toUpperCase() || ""
-    )
-  ) {
-    const csrfToken = getCSRFToken();
-    if (csrfToken) {
-      config.headers["X-CSRF-Token"] = csrfToken;
-    }
-  }
-  return config;
-});
-
-// Interceptor para manejar errores de respuesta
-api.interceptors.response.use(
-  (response) => {
-    if (process.env.NODE_ENV === "development") {
-      console.log(``, response.data);
-    }
-    return response;
-  },
-  (error) => {
-    // Errores esperados que NO deben mostrarse en consola
-    const EXPECTED_ERRORS = [400, 401, 403, 409, 429, 404];
-
     const status = error.response?.status;
 
     // Solo logear errores inesperados
@@ -117,7 +73,7 @@ api.interceptors.response.use(
       });
     }
 
-    // Manejo de redirección para 401
+    // Manejo especial de 401
     if (status === 401) {
       const publicPaths = [
         "/login",
@@ -130,9 +86,15 @@ api.interceptors.response.use(
         typeof window !== "undefined" ? window.location.pathname : "";
 
       if (!publicPaths.includes(currentPath)) {
-        document.cookie =
-          "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // Limpiar cookies y localStorage
+        if (typeof document !== "undefined") {
+          document.cookie =
+            "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          document.cookie =
+            "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        }
         if (typeof window !== "undefined") {
+          localStorage.clear();
           window.location.href = "/login";
         }
       }
