@@ -49,17 +49,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
 
       if (typeof document !== "undefined") {
-        const hasCookies = document.cookie.includes("auth_token");
-
-        if (!hasCookies) {
-          console.log("⚠️ No hay cookies, usuario no autenticado");
-          setUser(null);
-          setIsAuthenticated(false);
-          return null;
-        }
-      }
-
-      if (typeof document !== "undefined") {
         const cookies = document.cookie;
         console.log("🍪 Cookies disponibles:", cookies ? "Sí" : "No");
         console.log(
