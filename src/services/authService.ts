@@ -182,6 +182,19 @@ const authService = {
     const response = await api.post("/auth/verify-security-answer", data);
     return response.data;
   },
+  // VERIFICAR ENLACE DE EMAIL
+  verifyEmailLink: async (verificationId: string) => {
+    const response = await api.get(`/auth/verify-email-link/${verificationId}`);
+    return response.data;
+  },
+
+  // REENVIAR ENLACE DE VERIFICACIÓN
+  resendVerificationLink: async (email: string) => {
+    const response = await api.post("/auth/resend-verification-link", {
+      email,
+    });
+    return response.data;
+  },
 };
 
 export default authService;

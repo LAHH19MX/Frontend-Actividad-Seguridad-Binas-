@@ -79,6 +79,7 @@ api.interceptors.response.use(
         "/reset-password",
         "/verify-recovery",
         "/security-question",
+        "/verify-email-link",
       ];
       const currentPath =
         typeof window !== "undefined" ? window.location.pathname : "";

@@ -9,15 +9,15 @@ import { isValidCode } from "@/utils/validators";
 export default function VerifyRegistration() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [emailCode, setEmailCode] = useState(""); // Solo un código
+  const [emailCode, setEmailCode] = useState("");
   const [errors, setErrors] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isResendingLink, setIsResendingLink] = useState(false); // 👈 NUEVO
   const [apiError, setApiError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutos = 300 segundos
+  const [timeLeft, setTimeLeft] = useState(300);
 
   useEffect(() => {
-    // Obtener email del localStorage
     const savedEmail = localStorage.getItem("registerEmail");
     if (!savedEmail) {
       router.push("/register");
@@ -25,7 +25,6 @@ export default function VerifyRegistration() {
     }
     setEmail(savedEmail);
 
-    // Timer de 5 minutos
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -47,7 +46,6 @@ export default function VerifyRegistration() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    // Solo permitir números y máximo 6 dígitos
     const numericValue = value.replace(/\D/g, "").slice(0, 6);
     setEmailCode(numericValue);
     if (errors.emailCode) {
@@ -86,25 +84,42 @@ export default function VerifyRegistration() {
 
       setSuccessMessage(response.message);
 
-      // Limpiar localStorage
       localStorage.removeItem("registerEmail");
 
-      // Redirigir al login después de 2 segundos
       setTimeout(() => {
         router.push("/login");
       }, 2000);
     } catch (error: any) {
-      // Capturar TODOS los errores sin propagarlos
       const errorMessage =
         error.response?.data?.error || "Error al verificar cuenta";
       setApiError(errorMessage);
 
-      // Solo logear errores inesperados (500, network, etc.)
       if (!error.response || error.response.status >= 500) {
         console.error("Error inesperado en verificación:", error);
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 👇 NUEVA FUNCIÓN: Enviar enlace de verificación
+  const handleSendLink = async () => {
+    setApiError("");
+    setSuccessMessage("");
+    setIsResendingLink(true);
+
+    try {
+      const response = await authService.resendVerificationLink(email);
+      setSuccessMessage(
+        response.message ||
+          "Enlace de verificación enviado a tu email. Válido por 5 minutos."
+      );
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.error || "Error al enviar enlace";
+      setApiError(errorMessage);
+    } finally {
+      setIsResendingLink(false);
     }
   };
 
@@ -119,9 +134,7 @@ export default function VerifyRegistration() {
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center py-12 px-4">
         <div className="max-w-md w-full">
-          {/* Card principal */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
-            {/* Icono de verificación */}
             <div className="flex justify-center mb-6">
               <div className="w-20 h-20 bg-gradient-to-br from-[#3498db] to-[#2980b9] rounded-full flex items-center justify-center">
                 <svg
@@ -140,7 +153,6 @@ export default function VerifyRegistration() {
               </div>
             </div>
 
-            {/* Título */}
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 Verifica tu cuenta
@@ -151,7 +163,6 @@ export default function VerifyRegistration() {
               <p className="text-[#3498db] font-semibold mt-2">{email}</p>
             </div>
 
-            {/* Timer */}
             <div className="bg-gradient-to-r from-[#3498db]/10 to-[#2980b9]/10 rounded-lg p-4 mb-6 border border-[#3498db]/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -182,7 +193,6 @@ export default function VerifyRegistration() {
               </div>
             </div>
 
-            {/* Alertas */}
             {apiError && (
               <div className="mb-6">
                 <Alert type="error" message={apiError} />
@@ -195,9 +205,7 @@ export default function VerifyRegistration() {
               </div>
             )}
 
-            {/* Formulario */}
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Código de Email */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Código de Verificación
@@ -224,7 +232,6 @@ export default function VerifyRegistration() {
                 />
               </div>
 
-              {/* Botón de verificar */}
               <Button
                 type="submit"
                 variant="primary"
@@ -236,7 +243,49 @@ export default function VerifyRegistration() {
               </Button>
             </form>
 
-            {/* Información adicional */}
+            {/* 👇 NUEVO: Botón para recibir enlace */}
+            <div className="mt-4">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">o</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSendLink}
+                disabled={isResendingLink}
+                className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 border border-[#3498db] text-[#3498db] rounded-lg hover:bg-[#3498db]/5 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isResendingLink ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-[#3498db] border-t-transparent rounded-full animate-spin"></div>
+                    <span>Enviando...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                      />
+                    </svg>
+                    <span>Recibir enlace en su lugar</span>
+                  </>
+                )}
+              </button>
+            </div>
+
             <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
               <p className="text-sm text-gray-700 flex items-start gap-2">
                 <svg
@@ -255,7 +304,6 @@ export default function VerifyRegistration() {
             </div>
           </div>
 
-          {/* Link para volver */}
           <div className="mt-6 text-center">
             <button
               onClick={() => router.push("/register")}
