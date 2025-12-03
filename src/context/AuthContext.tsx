@@ -173,33 +173,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setTempToken(null);
       setRequires2FA(false);
 
-      // 3. Limpiar cookies manualmente del lado del cliente
       // if (typeof document !== "undefined") {
-      //   // Limpiar con múltiples configuraciones para asegurar eliminación
-      //   const cookieOptions = [
-      //     "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;",
-      //     "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.vercel.app;",
-      //     "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;",
-      //     "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.vercel.app;",
-      //   ];
+      //   // Intentar eliminar con múltiples configuraciones
+      //   document.cookie =
+      //     "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; samesite=none";
+      //   document.cookie =
+      //     "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; samesite=none";
 
-      //   cookieOptions.forEach((cookie) => {
-      //     document.cookie = cookie;
-      //   });
+      //   // Intentar sin secure/samesite también (por si acaso)
+      //   document.cookie =
+      //     "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      //   document.cookie =
+      //     "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       // }
-      if (typeof document !== "undefined") {
-        // Intentar eliminar con múltiples configuraciones
-        document.cookie =
-          "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; samesite=none";
-        document.cookie =
-          "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; samesite=none";
-
-        // Intentar sin secure/samesite también (por si acaso)
-        document.cookie =
-          "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        document.cookie =
-          "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      }
 
       // 4. Limpiar localStorage
       if (typeof window !== "undefined") {
