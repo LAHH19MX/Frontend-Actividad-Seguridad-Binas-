@@ -25,31 +25,55 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Interceptor para agregar token CSRF
-api.interceptors.request.use(
-  (config) => {
-    // Solo agregar CSRF token a métodos que modifican datos
-    const method = config.method?.toLowerCase();
-    if (method && ["post", "put", "delete", "patch"].includes(method)) {
-      const csrfToken = getCSRFToken();
-      if (csrfToken) {
-        config.headers["X-CSRF-Token"] = csrfToken;
-      } else {
-        console.warn("⚠️ No se encontró CSRF token en las cookies");
-      }
-    }
-
-    // Logging para debugging
+// Interceptor para manejar errores de respuesta
+api.interceptors.response.use(
+  (response) => {
     if (process.env.NODE_ENV === "development") {
-      console.log(``, {
-        withCredentials: config.withCredentials,
-        headers: config.headers,
+      console.log(`✅ Respuesta exitosa:`, response.data);
+    }
+    return response;
+  },
+  (error) => {
+    const EXPECTED_ERRORS = [400, 401, 403, 409, 429, 404];
+    const status = error.response?.status;
+
+    if (status && !EXPECTED_ERRORS.includes(status)) {
+      console.error("Error de API:", {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
       });
     }
 
-    return config;
-  },
-  (error) => {
+    // 👇 MEJORAR: Manejo de 401
+    if (status === 401) {
+      const publicPaths = [
+        "/login",
+        "/register",
+        "/forgot-password",
+        "/verify-registration",
+        "/verify-2fa",
+      ];
+      const currentPath =
+        typeof window !== "undefined" ? window.location.pathname : "";
+
+      if (!publicPaths.includes(currentPath)) {
+        // Limpiar TODO
+        if (typeof document !== "undefined") {
+          document.cookie =
+            "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          document.cookie =
+            "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        }
+        if (typeof window !== "undefined") {
+          localStorage.clear();
+          window.location.href = "/login";
+        }
+      }
+    }
+
     return Promise.reject(error);
   }
 );

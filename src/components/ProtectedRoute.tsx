@@ -22,33 +22,30 @@ export default function ProtectedRoute({
     // Esperar a que termine de cargar
     if (isLoading) return;
 
+    const hasCookies =
+      typeof document !== "undefined" && document.cookie.includes("auth_token");
+
     // Si requiere autenticación y no está autenticado
-    if (requireAuth && !isAuthenticated) {
-      router.push(redirectTo || "/login");
+    if (requireAuth && (!isAuthenticated || !hasCookies)) {
+      // 👇 Usar window.location para forzar recarga completa
+      if (typeof window !== "undefined") {
+        window.location.href = redirectTo || "/login";
+      }
       return;
     }
 
     // Si requiere un rol específico y no lo tiene
     if (requireRole && user?.role !== requireRole) {
-      // Redirigir al dashboard correcto según su rol
       if (user?.role === "ADMIN") {
-        router.push("/dashboard/admin");
+        window.location.href = "/dashboard/admin";
       } else if (user?.role === "CLIENTE") {
-        router.push("/dashboard/cliente");
+        window.location.href = "/dashboard/cliente";
       } else {
-        router.push("/login");
+        window.location.href = "/login";
       }
       return;
     }
-  }, [
-    isLoading,
-    isAuthenticated,
-    user,
-    requireAuth,
-    requireRole,
-    router,
-    redirectTo,
-  ]);
+  }, [isLoading, isAuthenticated, user, requireAuth, requireRole, redirectTo]);
 
   // Mostrar loading mientras verifica
   if (isLoading) {

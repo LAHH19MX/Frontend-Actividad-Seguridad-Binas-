@@ -162,34 +162,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      // Primero intentar logout en el backend
+      // 1. Llamar al backend para revocar sesión
       await authService.logout();
     } catch (error: any) {
       console.error("⚠️ Error en logout del backend:", error);
-      // Continuar aunque falle para limpiar el frontend
     } finally {
-      // Siempre limpiar estado local
+      // 2. SIEMPRE limpiar estado local
       setUser(null);
       setIsAuthenticated(false);
       setTempToken(null);
       setRequires2FA(false);
 
-      // Limpiar cookies del lado del cliente
+      // 3. Limpiar cookies manualmente del lado del cliente
       if (typeof document !== "undefined") {
-        document.cookie =
-          "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        document.cookie =
-          "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // Limpiar con múltiples configuraciones para asegurar eliminación
+        const cookieOptions = [
+          "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;",
+          "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.vercel.app;",
+          "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;",
+          "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.vercel.app;",
+        ];
+
+        cookieOptions.forEach((cookie) => {
+          document.cookie = cookie;
+        });
       }
 
-      // Limpiar localStorage si existe
+      // 4. Limpiar localStorage
       if (typeof window !== "undefined") {
-        localStorage.removeItem("tempToken");
-        localStorage.removeItem("registerEmail");
+        localStorage.clear();
       }
 
-      // Redirigir al home
-      router.push("/");
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
     }
   };
 
