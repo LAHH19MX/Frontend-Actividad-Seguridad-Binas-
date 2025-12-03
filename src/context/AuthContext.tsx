@@ -48,25 +48,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
 
-      // Las cookies se envían automáticamente (withCredentials: true)
+      if (typeof document !== "undefined") {
+        const cookies = document.cookie;
+        console.log("🍪 Cookies disponibles:", cookies ? "Sí" : "No");
+        console.log(
+          "🍪 Cookie auth_token:",
+          cookies.includes("auth_token") ? "Encontrada" : "No encontrada"
+        );
+      }
+
       const response = await authService.getProfile();
 
       if (response.success) {
         setUser(response.data.user);
         setIsAuthenticated(true);
-        return response.data.user; // Devolver usuario para uso externo
+        return response.data.user;
       } else {
         setUser(null);
         setIsAuthenticated(false);
         return null;
       }
     } catch (error: any) {
-      // Si hay error 401, no está autenticado
       if (error.response?.status === 401) {
+        console.log("⚠️ 401: Usuario no autenticado");
         setUser(null);
         setIsAuthenticated(false);
       }
-      // Otros errores no cambian el estado
       return null;
     } finally {
       setIsLoading(false);

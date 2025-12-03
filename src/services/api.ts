@@ -34,6 +34,8 @@ api.interceptors.request.use(
       const csrfToken = getCSRFToken();
       if (csrfToken) {
         config.headers["X-CSRF-Token"] = csrfToken;
+      } else {
+        console.warn("⚠️ No se encontró CSRF token en las cookies");
       }
     }
 

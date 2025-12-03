@@ -84,6 +84,8 @@ export default function Verify2FA() {
 
       setSuccessMessage("¡Verificación exitosa! Redirigiendo...");
 
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // Marcar que ya se intentó redirigir
       setHasRedirected(true);
 
