@@ -50,11 +50,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (typeof document !== "undefined") {
         const cookies = document.cookie;
-        console.log("🍪 Cookies disponibles:", cookies ? "Sí" : "No");
-        console.log(
-          "🍪 Cookie auth_token:",
-          cookies.includes("auth_token") ? "Encontrada" : "No encontrada"
-        );
       }
 
       const response = await authService.getProfile();
@@ -70,7 +65,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error: any) {
       if (error.response?.status === 401) {
-        console.log("⚠️ 401: Usuario no autenticado");
         setUser(null);
         setIsAuthenticated(false);
       }
@@ -137,7 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           router.push(targetPath);
         } catch (routerError) {
-          console.error("❌ Error en router.push:", routerError);
+          console.error("Error en router.push");
         }
 
         // 5. FALLBACK ABSOLUTO: Si después de 1.5s seguimos en verify-2fa, usar window.location
@@ -146,7 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             typeof window !== "undefined" &&
             window.location.pathname.includes("/verify-2fa")
           ) {
-            console.warn("⚠️ router.push() falló, usando window.location.href");
+            console.warn("router.push() falló, usando window.location.href");
             window.location.href = targetPath;
           }
         }, 1500);
@@ -165,19 +159,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // 🔍 DEBUG: Ver cookies antes de logout
       if (typeof document !== "undefined") {
         const cookies = document.cookie;
-        console.log("🍪 Todas las cookies:", cookies);
 
         const csrfCookie = cookies
           .split(";")
           .find((c) => c.trim().startsWith("csrf_token="));
-        console.log("🔒 CSRF en cookie:", csrfCookie);
       }
 
       await authService.logout();
-      console.log("✅ Logout exitoso");
     } catch (error: any) {
-      console.error("❌ Error logout:", error.response?.status);
-      console.error("❌ Data:", error.response?.data);
+      console.error("Error logout:", error.response?.status);
+      console.error("Data:", error.response?.data);
     } finally {
       setUser(null);
       setIsAuthenticated(false);

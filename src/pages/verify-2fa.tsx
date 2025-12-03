@@ -95,9 +95,6 @@ export default function Verify2FA() {
           !hasRedirected &&
           window.location.pathname.includes("/verify-2fa")
         ) {
-          console.log(
-            "⚠️ Redirección automática fallida, redirigiendo manualmente..."
-          );
           router.push("/dashboard/cliente");
         }
       }, 3000);
@@ -136,7 +133,6 @@ export default function Verify2FA() {
         method: "email",
       });
 
-      console.log("✅ Código reenviado por email");
       setSuccessMessage(
         "Código reenviado a tu email. Ingresa el nuevo código."
       );

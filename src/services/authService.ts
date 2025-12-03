@@ -159,7 +159,7 @@ const authService = {
       {},
       {
         headers: {
-          "X-CSRF-Token": csrfToken || "", // 👈 FORZAR EL HEADER AQUÍ
+          "X-CSRF-Token": csrfToken || "",
         },
       }
     );

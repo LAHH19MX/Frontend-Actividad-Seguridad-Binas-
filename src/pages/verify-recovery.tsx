@@ -89,8 +89,6 @@ export default function VerifyRecovery() {
         code,
       });
 
-      console.log("✅ Código verificado:", response);
-
       // Guardar resetToken
       localStorage.setItem("resetToken", response.data.resetToken);
       localStorage.removeItem("recoveryToken");
@@ -123,11 +121,10 @@ export default function VerifyRecovery() {
         method: "email",
       });
 
-      console.log("✅ Código reenviado por email");
       setSuccessMessage("Código reenviado a tu email");
       setTimeLeft(300); // Reiniciar timer
     } catch (error: any) {
-      console.error("❌ Error reenviando código:", error);
+      console.error("Error reenviando código");
       const errorMessage =
         error.response?.data?.error || "Error al reenviar código";
       setApiError(errorMessage);

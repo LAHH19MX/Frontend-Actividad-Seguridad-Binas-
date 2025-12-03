@@ -72,8 +72,6 @@ export default function SecurityQuestion() {
         answer,
       });
 
-      console.log("✅ Respuesta correcta:", response);
-
       // Guardar el nuevo tempToken (para el código) y email en localStorage
       localStorage.setItem("recoveryToken", response.data.tempToken);
       localStorage.setItem("recoveryEmail", email);

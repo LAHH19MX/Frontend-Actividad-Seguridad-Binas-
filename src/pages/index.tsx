@@ -30,7 +30,6 @@ export default function Home() {
         isAuthenticated={isAuthenticated}
         // user={user}
         onLogout={() => {
-          console.log("Cerrando sesión...");
           alert("Sesión cerrada");
         }}
       />

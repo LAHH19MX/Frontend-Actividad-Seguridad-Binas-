@@ -25,7 +25,6 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// ✅ INTERCEPTOR DE REQUEST (DEBE IR PRIMERO)
 api.interceptors.request.use(
   (config) => {
     // Solo agregar CSRF token a métodos que modifican datos
@@ -34,12 +33,8 @@ api.interceptors.request.use(
       const csrfToken = getCSRFToken();
       if (csrfToken) {
         config.headers["X-CSRF-Token"] = csrfToken;
-        console.log(
-          "🔒 CSRF Token agregado al header:",
-          csrfToken.substring(0, 10) + "..."
-        );
       } else {
-        console.warn("⚠️ No se encontró CSRF token en las cookies");
+        console.warn("No se encontró CSRF token en las cookies");
       }
     }
 
@@ -50,11 +45,10 @@ api.interceptors.request.use(
   }
 );
 
-// ✅ INTERCEPTOR DE RESPONSE (SOLO UNO)
 api.interceptors.response.use(
   (response) => {
     if (process.env.NODE_ENV === "development") {
-      console.log(`✅ Respuesta exitosa:`, response.data);
+      console.log(``);
     }
     return response;
   },
@@ -81,6 +75,10 @@ api.interceptors.response.use(
         "/forgot-password",
         "/verify-registration",
         "/verify-2fa",
+        "/reset-password-link",
+        "/reset-password",
+        "/verify-recovery",
+        "/security-question",
       ];
       const currentPath =
         typeof window !== "undefined" ? window.location.pathname : "";

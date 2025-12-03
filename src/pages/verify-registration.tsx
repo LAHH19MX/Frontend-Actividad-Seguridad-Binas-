@@ -84,8 +84,6 @@ export default function VerifyRegistration() {
         emailCode: emailCode,
       });
 
-      console.log("Verificación exitosa:", response);
-
       setSuccessMessage(response.message);
 
       // Limpiar localStorage
