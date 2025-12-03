@@ -49,6 +49,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
 
       if (typeof document !== "undefined") {
+        const hasCookies = document.cookie.includes("auth_token");
+
+        if (!hasCookies) {
+          console.log("⚠️ No hay cookies, usuario no autenticado");
+          setUser(null);
+          setIsAuthenticated(false);
+          return null;
+        }
+      }
+
+      if (typeof document !== "undefined") {
         const cookies = document.cookie;
         console.log("🍪 Cookies disponibles:", cookies ? "Sí" : "No");
         console.log(
@@ -174,18 +185,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setRequires2FA(false);
 
       // 3. Limpiar cookies manualmente del lado del cliente
-      if (typeof document !== "undefined") {
-        // Limpiar con múltiples configuraciones para asegurar eliminación
-        const cookieOptions = [
-          "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;",
-          "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.vercel.app;",
-          "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;",
-          "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.vercel.app;",
-        ];
+      // if (typeof document !== "undefined") {
+      //   // Limpiar con múltiples configuraciones para asegurar eliminación
+      //   const cookieOptions = [
+      //     "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;",
+      //     "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.vercel.app;",
+      //     "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;",
+      //     "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.vercel.app;",
+      //   ];
 
-        cookieOptions.forEach((cookie) => {
-          document.cookie = cookie;
-        });
+      //   cookieOptions.forEach((cookie) => {
+      //     document.cookie = cookie;
+      //   });
+      // }
+      if (typeof document !== "undefined") {
+        // Intentar eliminar con múltiples configuraciones
+        document.cookie =
+          "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; samesite=none";
+        document.cookie =
+          "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; samesite=none";
+
+        // Intentar sin secure/samesite también (por si acaso)
+        document.cookie =
+          "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie =
+          "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       }
 
       // 4. Limpiar localStorage
@@ -193,7 +217,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.clear();
       }
 
-      router.push("/");
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
     }
   };
 
