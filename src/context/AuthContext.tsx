@@ -162,37 +162,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      // 1. Llamar al backend para revocar sesión
+      // 🔍 DEBUG: Ver cookies antes de logout
+      if (typeof document !== "undefined") {
+        const cookies = document.cookie;
+        console.log("🍪 Todas las cookies:", cookies);
+
+        const csrfCookie = cookies
+          .split(";")
+          .find((c) => c.trim().startsWith("csrf_token="));
+        console.log("🔒 CSRF en cookie:", csrfCookie);
+      }
+
       await authService.logout();
+      console.log("✅ Logout exitoso");
     } catch (error: any) {
-      console.error("⚠️ Error en logout del backend:", error);
+      console.error("❌ Error logout:", error.response?.status);
+      console.error("❌ Data:", error.response?.data);
     } finally {
-      // 2. SIEMPRE limpiar estado local
       setUser(null);
       setIsAuthenticated(false);
       setTempToken(null);
       setRequires2FA(false);
 
-      // if (typeof document !== "undefined") {
-      //   // Intentar eliminar con múltiples configuraciones
-      //   document.cookie =
-      //     "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; samesite=none";
-      //   document.cookie =
-      //     "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; samesite=none";
-
-      //   // Intentar sin secure/samesite también (por si acaso)
-      //   document.cookie =
-      //     "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      //   document.cookie =
-      //     "csrf_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      // }
-
-      // 4. Limpiar localStorage
       if (typeof window !== "undefined") {
         localStorage.clear();
-      }
-
-      if (typeof window !== "undefined") {
         window.location.href = "/login";
       }
     }
