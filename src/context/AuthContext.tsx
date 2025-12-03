@@ -193,9 +193,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.clear();
       }
 
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
-      }
+      router.push("/");
     }
   };
 

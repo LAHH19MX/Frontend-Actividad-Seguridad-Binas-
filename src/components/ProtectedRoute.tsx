@@ -4,9 +4,9 @@ import { useAuth } from "@/context/AuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requireAuth?: boolean; // Si requiere estar autenticado
-  requireRole?: "ADMIN" | "CLIENTE"; // Si requiere un rol específico
-  redirectTo?: string; // Ruta de redirección personalizada
+  requireAuth?: boolean;
+  requireRole?: "ADMIN" | "CLIENTE";
+  redirectTo?: string;
 }
 
 export default function ProtectedRoute({
@@ -19,35 +19,33 @@ export default function ProtectedRoute({
   const { user, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // Esperar a que termine de cargar
     if (isLoading) return;
 
-    const hasCookies =
-      typeof document !== "undefined" && document.cookie.includes("auth_token");
-
-    // Si requiere autenticación y no está autenticado
-    if (requireAuth && (!isAuthenticated || !hasCookies)) {
-      // 👇 Usar window.location para forzar recarga completa
-      if (typeof window !== "undefined") {
-        window.location.href = redirectTo || "/login";
-      }
+    if (requireAuth && !isAuthenticated) {
+      router.push(redirectTo || "/login");
       return;
     }
 
-    // Si requiere un rol específico y no lo tiene
     if (requireRole && user?.role !== requireRole) {
       if (user?.role === "ADMIN") {
-        window.location.href = "/dashboard/admin";
+        router.push("/dashboard/admin");
       } else if (user?.role === "CLIENTE") {
-        window.location.href = "/dashboard/cliente";
+        router.push("/dashboard/cliente");
       } else {
-        window.location.href = "/login";
+        router.push("/login");
       }
       return;
     }
-  }, [isLoading, isAuthenticated, user, requireAuth, requireRole, redirectTo]);
+  }, [
+    isLoading,
+    isAuthenticated,
+    user,
+    requireAuth,
+    requireRole,
+    router,
+    redirectTo,
+  ]);
 
-  // Mostrar loading mientras verifica
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -59,16 +57,13 @@ export default function ProtectedRoute({
     );
   }
 
-  // Si no está autenticado y requiere autenticación, no renderizar nada
   if (requireAuth && !isAuthenticated) {
     return null;
   }
 
-  // Si requiere un rol específico y no lo tiene, no renderizar nada
   if (requireRole && user?.role !== requireRole) {
     return null;
   }
 
-  // Si todo está bien, renderizar el contenido
   return <>{children}</>;
 }
