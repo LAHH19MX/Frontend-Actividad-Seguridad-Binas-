@@ -137,8 +137,33 @@ const authService = {
   },
 
   // Logout
+  // Logout
   logout: async () => {
-    const response = await api.post("/user/logout");
+    // 👇 OBTENER CSRF TOKEN MANUALMENTE
+    const getCSRFToken = (): string | null => {
+      if (typeof document === "undefined") return null;
+      const cookies = document.cookie.split(";");
+      for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split("=");
+        if (name === "csrf_token") {
+          return decodeURIComponent(value);
+        }
+      }
+      return null;
+    };
+
+    const csrfToken = getCSRFToken();
+
+    const response = await api.post(
+      "/user/logout",
+      {},
+      {
+        headers: {
+          "X-CSRF-Token": csrfToken || "", // 👈 FORZAR EL HEADER AQUÍ
+        },
+      }
+    );
+
     return response.data;
   },
 
