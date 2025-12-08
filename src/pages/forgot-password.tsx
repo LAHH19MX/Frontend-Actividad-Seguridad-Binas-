@@ -250,7 +250,7 @@ export default function ForgotPassword() {
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
           <div className="absolute top-6 right-8 hidden lg:block">
             <Image
-              src="/logoS.png"
+              src="/logo.png"
               alt="SySCOM"
               width={100}
               height={32}

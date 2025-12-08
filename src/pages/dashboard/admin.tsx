@@ -124,7 +124,7 @@ export default function DashboardAdmin() {
           <aside className="w-64 bg-white shadow-lg fixed h-screen">
             <div className="p-6 border-b">
               <Image
-                src="/logoS.png"
+                src="/logo.png"
                 alt="SySCOM"
                 width={120}
                 height={40}
@@ -290,7 +290,7 @@ export default function DashboardAdmin() {
         <aside className="w-64 bg-white shadow-lg fixed h-screen">
           <div className="p-6 border-b">
             <Image
-              src="/logoS.png"
+              src="/logo.png"
               alt="SySCOM"
               width={120}
               height={40}
