@@ -37,7 +37,7 @@ const Navbar: React.FC<NavbarProps> = ({
           >
             <div className="relative w-32 h-10">
               <Image
-                src="/logoS.png"
+                src="/logo.png"
                 alt="SySCOM"
                 width={120}
                 height={35}
@@ -52,6 +52,12 @@ const Navbar: React.FC<NavbarProps> = ({
             <div className="flex items-center gap-6">
               <Link
                 href="/"
+                className="text-gray-700 hover:text-[#3498db] transition-colors font-medium"
+              >
+                Inicio
+              </Link>
+              <Link
+                href="/products"
                 className="text-gray-700 hover:text-[#3498db] transition-colors font-medium"
               >
                 Productos

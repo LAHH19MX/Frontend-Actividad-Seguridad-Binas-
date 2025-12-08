@@ -21,7 +21,6 @@ const Alert: React.FC<AlertProps> = ({
     if (autoClose) {
       const timer = setTimeout(() => {
         setIsVisible(false);
-        // Esperar a que termine la animación antes de cerrar
         setTimeout(() => {
           onClose?.();
         }, 300);
@@ -43,12 +42,14 @@ const Alert: React.FC<AlertProps> = ({
       bg: "bg-green-50",
       border: "border-green-500",
       text: "text-green-800",
+      ariaLabel: "Mensaje de éxito",
       icon: (
         <svg
           className="h-5 w-5"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
+          aria-hidden="true"
         >
           <path
             fillRule="evenodd"
@@ -62,12 +63,14 @@ const Alert: React.FC<AlertProps> = ({
       bg: "bg-red-50",
       border: "border-red-500",
       text: "text-red-800",
+      ariaLabel: "Mensaje de error",
       icon: (
         <svg
           className="h-5 w-5"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
+          aria-hidden="true"
         >
           <path
             fillRule="evenodd"
@@ -81,12 +84,14 @@ const Alert: React.FC<AlertProps> = ({
       bg: "bg-yellow-50",
       border: "border-yellow-500",
       text: "text-yellow-800",
+      ariaLabel: "Mensaje de advertencia",
       icon: (
         <svg
           className="h-5 w-5"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
+          aria-hidden="true"
         >
           <path
             fillRule="evenodd"
@@ -100,12 +105,14 @@ const Alert: React.FC<AlertProps> = ({
       bg: "bg-blue-50",
       border: "border-blue-500",
       text: "text-blue-800",
+      ariaLabel: "Mensaje informativo",
       icon: (
         <svg
           className="h-5 w-5"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
+          aria-hidden="true"
         >
           <path
             fillRule="evenodd"
@@ -121,6 +128,9 @@ const Alert: React.FC<AlertProps> = ({
 
   return (
     <div
+      role="alert"
+      aria-live="assertive"
+      aria-label={currentStyle.ariaLabel}
       className={`${currentStyle.bg} ${currentStyle.border} ${
         currentStyle.text
       } border-l-4 p-4 rounded-lg shadow-md flex items-start gap-3 transition-all duration-300 ${
@@ -143,6 +153,7 @@ const Alert: React.FC<AlertProps> = ({
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
+          aria-hidden="true"
         >
           <path
             fillRule="evenodd"

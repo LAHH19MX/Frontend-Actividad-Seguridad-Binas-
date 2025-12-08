@@ -6,6 +6,15 @@
   body {
     @apply bg-white text-gray-900;
   }
+
+  /* Modo Alto Contraste */
+  .high-contrast body {
+    @apply bg-black text-white;
+  }
+
+  .high-contrast * {
+    border-color: white !important;
+  }
 }
 
 @layer components {
@@ -23,5 +32,76 @@
 
   .input-error {
     @apply border-red-500 focus:ring-red-500;
+  }
+
+  /* Alto Contraste - Backgrounds */
+  .high-contrast nav,
+  .high-contrast footer,
+  .high-contrast .bg-white {
+    @apply bg-black !important;
+  }
+
+  .high-contrast .bg-gray-100,
+  .high-contrast .bg-gray-50,
+  .high-contrast .bg-blue-50,
+  .high-contrast .bg-red-50,
+  .high-contrast .bg-green-50,
+  .high-contrast .bg-yellow-50 {
+    @apply bg-black !important;
+  }
+
+  /* Alto Contraste - Textos */
+  .high-contrast .text-gray-700,
+  .high-contrast .text-gray-600,
+  .high-contrast .text-gray-500,
+  .high-contrast .text-gray-400,
+  .high-contrast .text-blue-800,
+  .high-contrast .text-red-800,
+  .high-contrast .text-green-800,
+  .high-contrast .text-yellow-800 {
+    @apply text-white !important;
+  }
+
+  /* Alto Contraste - Botones */
+  .high-contrast button,
+  .high-contrast .btn-primary,
+  .high-contrast .btn-secondary {
+    @apply bg-white text-black border-2 border-white !important;
+  }
+
+  .high-contrast button:hover {
+    @apply bg-yellow-400 text-black !important;
+  }
+
+  /* Alto Contraste - Inputs */
+  .high-contrast input,
+  .high-contrast textarea,
+  .high-contrast select {
+    @apply bg-black text-white border-2 border-white !important;
+  }
+
+  .high-contrast input::placeholder {
+    @apply text-gray-400 !important;
+  }
+
+  /* Alto Contraste - Links */
+  .high-contrast a {
+    @apply text-yellow-400 !important;
+  }
+
+  .high-contrast a:hover {
+    @apply text-yellow-300 underline !important;
+  }
+
+  /* Alto Contraste - Sombras */
+  .high-contrast .shadow-md,
+  .high-contrast .shadow-lg,
+  .high-contrast .shadow-xl {
+    box-shadow: 0 0 0 2px white !important;
+  }
+
+  /* Alto Contraste - Íconos SVG */
+  .high-contrast svg {
+    @apply text-white !important;
   }
 }

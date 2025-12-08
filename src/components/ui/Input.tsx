@@ -23,10 +23,36 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const [showPassword, setShowPassword] = useState(false);
     const inputType = showPasswordToggle && showPassword ? "text" : type;
 
+    // Generar ID único si no existe
+    const inputId =
+      props.id || `input-${Math.random().toString(36).substr(2, 9)}`;
+
+    // Generar aria-label descriptivo
+    const getAriaLabel = () => {
+      if (props["aria-label"]) return props["aria-label"];
+
+      const typeDescriptions: Record<string, string> = {
+        email: "correo electrónico",
+        password: "contraseña",
+        tel: "teléfono",
+        number: "número",
+        search: "búsqueda",
+        url: "dirección web",
+        date: "fecha",
+        time: "hora",
+      };
+
+      const typeDesc = typeDescriptions[type] || "texto";
+      return label ? `${label}, campo de ${typeDesc}` : `Campo de ${typeDesc}`;
+    };
+
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label
+            htmlFor={inputId}
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
             {label}
           </label>
         )}
@@ -34,7 +60,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="relative">
           {/* Ícono izquierdo */}
           {icon && (
-            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <div
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              aria-hidden="true"
+            >
               {icon}
             </div>
           )}
@@ -42,7 +71,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {/* Input */}
           <input
             ref={ref}
+            id={inputId}
             type={inputType}
+            aria-label={getAriaLabel()}
+            aria-invalid={error ? "true" : "false"}
+            aria-describedby={error ? `${inputId}-error` : undefined}
             className={`
               w-full px-4 py-3 
               ${icon ? "pl-12" : ""}
@@ -67,14 +100,17 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label={
+                showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+              }
             >
               {showPassword ? (
-                // Ícono de ojo cerrado
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
                   viewBox="0 0 20 20"
                   fill="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     fillRule="evenodd"
@@ -84,12 +120,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                   <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
                 </svg>
               ) : (
-                // Ícono de ojo abierto
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5"
                   viewBox="0 0 20 20"
                   fill="currentColor"
+                  aria-hidden="true"
                 >
                   <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                   <path
@@ -105,12 +141,17 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
         {/* Mensaje de error */}
         {error && (
-          <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+          <p
+            id={`${inputId}-error`}
+            className="mt-2 text-sm text-red-600 flex items-center gap-1"
+            role="alert"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-4 w-4"
               viewBox="0 0 20 20"
               fill="currentColor"
+              aria-hidden="true"
             >
               <path
                 fillRule="evenodd"

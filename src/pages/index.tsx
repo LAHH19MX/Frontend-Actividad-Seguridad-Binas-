@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { Navbar, Footer, CTA } from "@/components/layout";
+import Link from "next/link";
 import {
   Zap,
   Shield,
@@ -13,6 +14,54 @@ import {
   ShoppingCart,
   ArrowRight,
 } from "lucide-react";
+
+// Productos destacados para la página principal
+const featuredProducts = [
+  {
+    id: 1,
+    name: "Laptop Lenovo IdeaPad 3",
+    description: "Intel Core i5, 16GB RAM, 512GB SSD",
+    price: 15999,
+    originalPrice: 19999,
+    discount: 20,
+    rating: 4.5,
+    reviews: 128,
+    image: "/LENOVO1.jpg",
+  },
+  {
+    id: 2,
+    name: "Mouse Logitech G203 LIGHTSYNC",
+    description: "Ergonómico, 8000 DPI, Bluetooth",
+    price: 1899,
+    originalPrice: 2399,
+    discount: 21,
+    rating: 4.9,
+    reviews: 312,
+    image: "/LOGITECH1.jpg",
+  },
+  {
+    id: 3,
+    name: "Teclado Mecánico Logitech G715",
+    description: "Switches mecánicos, RGB, wireless",
+    price: 2499,
+    originalPrice: 2999,
+    discount: 17,
+    rating: 4.8,
+    reviews: 203,
+    image: "/LOGTEC1.jpg",
+  },
+  {
+    id: 4,
+    name: "Monitor HP 27 4K UHD",
+    description: "Pantalla IPS, 144Hz, HDR400",
+    price: 8999,
+    originalPrice: 10999,
+    discount: 18,
+    rating: 4.7,
+    reviews: 95,
+    image: "/monitor.png",
+  },
+];
 
 export default function Home() {
   // Prueba con usuario NO autenticado
@@ -51,10 +100,12 @@ export default function Home() {
                   Arma tu PC gamer con los mejores componentes a precios
                   increíbles.
                 </p>
-                <button className="bg-white text-[#2980b9] px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg flex items-center gap-2">
-                  Ver Componentes
-                  <ArrowRight size={20} />
-                </button>
+                <Link href="/products">
+                  <button className="bg-white text-[#2980b9] px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg flex items-center gap-2">
+                    Ver Componentes
+                    <ArrowRight size={20} />
+                  </button>
+                </Link>
               </div>
 
               {/* Imagen ilustrativa */}
@@ -139,76 +190,84 @@ export default function Home() {
 
             <div className="grid md:grid-cols-4 gap-6">
               {/* Computadoras */}
-              <div className="group cursor-pointer border shadow-lg rounded-lg overflow-hidden transition-all hover:shadow-2xl">
-                <div className="bg-gradient-to-br from-[#5dade2] to-[#3498db] py-20 px-12 text-center transition-transform hover:scale-105">
-                  <Monitor
-                    className="w-20 h-28 text-white mx-auto"
-                    strokeWidth={1.5}
-                  />
+              <Link href="/products">
+                <div className="group cursor-pointer border shadow-lg rounded-lg overflow-hidden transition-all hover:shadow-2xl">
+                  <div className="bg-gradient-to-br from-[#5dade2] to-[#3498db] py-20 px-12 text-center transition-transform hover:scale-105">
+                    <Monitor
+                      className="w-20 h-28 text-white mx-auto"
+                      strokeWidth={1.5}
+                    />
+                  </div>
+                  <div className="p-4 transition-all group-hover:bg-gray-50 mt-2 m-2">
+                    <h3 className="text-lg font-semibold text-center">
+                      Computadoras
+                    </h3>
+                    <p className="text-gray-600 text-sm text-center">
+                      Laptops, desktops y workstations
+                    </p>
+                  </div>
                 </div>
-                <div className="p-4 transition-all group-hover:bg-gray-50 mt-2 m-2">
-                  <h3 className="text-lg font-semibold text-center">
-                    Computadoras
-                  </h3>
-                  <p className="text-gray-600 text-sm text-center">
-                    Laptops, desktops y workstations
-                  </p>
-                </div>
-              </div>
+              </Link>
 
               {/* Componentes */}
-              <div className="group cursor-pointer border shadow-lg rounded-lg overflow-hidden transition-all hover:shadow-2xl">
-                <div className="bg-gradient-to-br from-[#5dade2] to-[#2e86c1] py-20 px-12 text-center transition-transform hover:scale-105">
-                  <Package
-                    className="w-20 h-28 text-white mx-auto"
-                    strokeWidth={1.5}
-                  />
+              <Link href="/products">
+                <div className="group cursor-pointer border shadow-lg rounded-lg overflow-hidden transition-all hover:shadow-2xl">
+                  <div className="bg-gradient-to-br from-[#5dade2] to-[#2e86c1] py-20 px-12 text-center transition-transform hover:scale-105">
+                    <Package
+                      className="w-20 h-28 text-white mx-auto"
+                      strokeWidth={1.5}
+                    />
+                  </div>
+                  <div className="p-4 transition-all group-hover:bg-gray-50 mt-2 m-2">
+                    <h3 className="text-lg font-semibold text-center">
+                      Componentes
+                    </h3>
+                    <p className="text-gray-600 text-sm text-center">
+                      Hardware y partes de computadora
+                    </p>
+                  </div>
                 </div>
-                <div className="p-4 transition-all group-hover:bg-gray-50 mt-2 m-2">
-                  <h3 className="text-lg font-semibold text-center">
-                    Componentes
-                  </h3>
-                  <p className="text-gray-600 text-sm text-center">
-                    Hardware y partes de computadora
-                  </p>
-                </div>
-              </div>
+              </Link>
 
               {/* Servicios Técnicos */}
-              <div className="group cursor-pointer border shadow-lg rounded-lg overflow-hidden transition-all hover:shadow-2xl">
-                <div className="bg-gradient-to-br from-[#5499c7] to-[#2874a6] py-20 px-12 text-center transition-transform hover:scale-105">
-                  <Settings
-                    className="w-20 h-28 text-white mx-auto"
-                    strokeWidth={1.5}
-                  />
+              <Link href="/products">
+                <div className="group cursor-pointer border shadow-lg rounded-lg overflow-hidden transition-all hover:shadow-2xl">
+                  <div className="bg-gradient-to-br from-[#5499c7] to-[#2874a6] py-20 px-12 text-center transition-transform hover:scale-105">
+                    <Settings
+                      className="w-20 h-28 text-white mx-auto"
+                      strokeWidth={1.5}
+                    />
+                  </div>
+                  <div className="p-4 transition-all group-hover:bg-gray-50 mt-2 m-2">
+                    <h3 className="text-lg font-semibold text-center">
+                      Servicios Técnicos
+                    </h3>
+                    <p className="text-gray-600 text-sm text-center">
+                      Reparación y mantenimiento
+                    </p>
+                  </div>
                 </div>
-                <div className="p-4 transition-all group-hover:bg-gray-50 mt-2 m-2">
-                  <h3 className="text-lg font-semibold text-center">
-                    Servicios Técnicos
-                  </h3>
-                  <p className="text-gray-600 text-sm text-center">
-                    Reparación y mantenimiento
-                  </p>
-                </div>
-              </div>
+              </Link>
 
               {/* Periféricos */}
-              <div className="group cursor-pointer border shadow-lg rounded-lg overflow-hidden transition-all hover:shadow-2xl">
-                <div className="bg-gradient-to-br from-[#5499c7] to-[#1f618d] py-20 px-12 text-center transition-transform hover:scale-105">
-                  <Headset
-                    className="w-20 h-28 text-white mx-auto"
-                    strokeWidth={1.5}
-                  />
+              <Link href="/products">
+                <div className="group cursor-pointer border shadow-lg rounded-lg overflow-hidden transition-all hover:shadow-2xl">
+                  <div className="bg-gradient-to-br from-[#5499c7] to-[#1f618d] py-20 px-12 text-center transition-transform hover:scale-105">
+                    <Headset
+                      className="w-20 h-28 text-white mx-auto"
+                      strokeWidth={1.5}
+                    />
+                  </div>
+                  <div className="p-4 transition-all group-hover:bg-gray-50 mt-2 m-2">
+                    <h3 className="text-lg font-semibold text-center">
+                      Periféricos
+                    </h3>
+                    <p className="text-gray-600 text-sm text-center">
+                      Teclados, mouse, monitores y más
+                    </p>
+                  </div>
                 </div>
-                <div className="p-4 transition-all group-hover:bg-gray-50 mt-2 m-2">
-                  <h3 className="text-lg font-semibold text-center">
-                    Periféricos
-                  </h3>
-                  <p className="text-gray-600 text-sm text-center">
-                    Teclados, mouse, monitores y más
-                  </p>
-                </div>
-              </div>
+              </Link>
             </div>
           </div>
         </section>
@@ -223,256 +282,75 @@ export default function Home() {
                 </h2>
                 <p className="text-gray-600">Los más vendidos de la semana</p>
               </div>
-              <button className="text-[#3498db] hover:text-[#2980b9] font-semibold flex items-center gap-2">
-                Ver todos
-                <ArrowRight size={20} />
-              </button>
+              <Link href="/products">
+                <button className="text-[#3498db] hover:text-[#2980b9] font-semibold flex items-center gap-2">
+                  Ver todos
+                  <ArrowRight size={20} />
+                </button>
+              </Link>
             </div>
 
             <div className="grid md:grid-cols-4 gap-6">
-              {/* Producto 1 */}
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="relative">
-                  <div className="absolute top-3 left-3 bg-[#3498db] text-white px-3 py-1 rounded-full text-sm font-bold z-10">
-                    -20%
-                  </div>
-                  <div className="aspect-square bg-gray-100 flex items-center justify-center p-8">
-                    <img
-                      src="/img1.png"
-                      alt="Producto 1"
-                      width={500}
-                      height={500}
-                      className="object-contain"
-                    />
-                  </div>
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-1 mb-2">
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <span className="text-sm text-gray-600 ml-1">(128)</span>
-                  </div>
-                  <h3 className="font-semibold mb-1 text-gray-900">
-                    Laptop Dell Inspiron 15
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Intel Core i7, 16GB RAM, 512GB SSD
-                  </p>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="text-2xl font-bold text-[#3498db]">
-                      $15,999
-                    </span>
-                    <span className="text-sm text-gray-500 line-through">
-                      $19,999
-                    </span>
-                  </div>
-                  <button className="w-full bg-[#3498db] text-white py-2 rounded-lg font-semibold hover:bg-[#2980b9] transition-colors flex items-center justify-center gap-2">
-                    <ShoppingCart size={18} />
-                    Agregar al carrito
-                  </button>
-                </div>
-              </div>
-
-              {/* Producto 2 */}
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="relative">
-                  <div className="absolute top-3 left-3 bg-[#3498db] text-white px-3 py-1 rounded-full text-sm font-bold z-10">
-                    -20%
-                  </div>
-                  <div className="aspect-square bg-gray-100 flex items-center justify-center p-8">
-                    <img
-                      src="/img1.png"
-                      alt="Producto 1"
-                      width={500}
-                      height={500}
-                      className="object-contain"
-                    />
+              {featuredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  role="article"
+                  className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-xl transition-shadow group"
+                >
+                  <Link href={`/product?id=${product.id}`}>
+                    <div className="relative">
+                      <div className="absolute top-3 left-3 bg-[#3498db] text-white px-3 py-1 rounded-full text-sm font-bold z-10">
+                        -{product.discount}%
+                      </div>
+                      <div className="aspect-square bg-gray-100 flex items-center justify-center p-8">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="object-contain w-full h-full transition-transform duration-500 group-hover:scale-110"
+                        />
+                      </div>
+                    </div>
+                  </Link>
+                  <div className="p-5">
+                    <div className="flex items-center gap-1 mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          size={16}
+                          className={`${
+                            i < Math.floor(product.rating)
+                              ? "text-yellow-400 fill-yellow-400"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                      <span className="text-sm text-gray-600 ml-1">
+                        ({product.reviews})
+                      </span>
+                    </div>
+                    <Link href={`/product?id=${product.id}`}>
+                      <h3 className="font-semibold mb-1 text-gray-900 hover:text-[#3498db] transition-colors cursor-pointer">
+                        {product.name}
+                      </h3>
+                    </Link>
+                    <p className="text-sm text-gray-600 mb-3">
+                      {product.description}
+                    </p>
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-2xl font-bold text-[#3498db]">
+                        ${product.price.toLocaleString()}
+                      </span>
+                      <span className="text-sm text-gray-500 line-through">
+                        ${product.originalPrice.toLocaleString()}
+                      </span>
+                    </div>
+                    <button className="w-full bg-[#3498db] text-white py-2 rounded-lg font-semibold hover:bg-[#2980b9] transition-colors flex items-center justify-center gap-2">
+                      <ShoppingCart size={18} />
+                      Agregar al carrito
+                    </button>
                   </div>
                 </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-1 mb-2">
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <span className="text-sm text-gray-600 ml-1">(128)</span>
-                  </div>
-                  <h3 className="font-semibold mb-1 text-gray-900">
-                    Laptop Dell Inspiron 15
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Intel Core i7, 16GB RAM, 512GB SSD
-                  </p>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="text-2xl font-bold text-[#3498db]">
-                      $15,999
-                    </span>
-                    <span className="text-sm text-gray-500 line-through">
-                      $19,999
-                    </span>
-                  </div>
-                  <button className="w-full bg-[#3498db] text-white py-2 rounded-lg font-semibold hover:bg-[#2980b9] transition-colors flex items-center justify-center gap-2">
-                    <ShoppingCart size={18} />
-                    Agregar al carrito
-                  </button>
-                </div>
-              </div>
-
-              {/* Producto 3 */}
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="relative">
-                  <div className="absolute top-3 left-3 bg-[#3498db] text-white px-3 py-1 rounded-full text-sm font-bold z-10">
-                    -20%
-                  </div>
-                  <div className="aspect-square bg-gray-100 flex items-center justify-center p-8">
-                    <img
-                      src="/img1.png"
-                      alt="Producto 1"
-                      width={500}
-                      height={500}
-                      className="object-contain"
-                    />
-                  </div>
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-1 mb-2">
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <span className="text-sm text-gray-600 ml-1">(128)</span>
-                  </div>
-                  <h3 className="font-semibold mb-1 text-gray-900">
-                    Laptop Dell Inspiron 15
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Intel Core i7, 16GB RAM, 512GB SSD
-                  </p>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="text-2xl font-bold text-[#3498db]">
-                      $15,999
-                    </span>
-                    <span className="text-sm text-gray-500 line-through">
-                      $19,999
-                    </span>
-                  </div>
-                  <button className="w-full bg-[#3498db] text-white py-2 rounded-lg font-semibold hover:bg-[#2980b9] transition-colors flex items-center justify-center gap-2">
-                    <ShoppingCart size={18} />
-                    Agregar al carrito
-                  </button>
-                </div>
-              </div>
-
-              {/* Producto 4 */}
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="relative">
-                  <div className="absolute top-3 left-3 bg-[#3498db] text-white px-3 py-1 rounded-full text-sm font-bold z-10">
-                    -20%
-                  </div>
-                  <div className="aspect-square bg-gray-100 flex items-center justify-center p-8">
-                    <img
-                      src="/img1.png"
-                      alt="Producto 1"
-                      width={500}
-                      height={500}
-                      className="object-contain"
-                    />
-                  </div>
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-1 mb-2">
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <Star
-                      size={16}
-                      className="text-yellow-400 fill-yellow-400"
-                    />
-                    <span className="text-sm text-gray-600 ml-1">(128)</span>
-                  </div>
-                  <h3 className="font-semibold mb-1 text-gray-900">
-                    Laptop Dell Inspiron 15
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    Intel Core i7, 16GB RAM, 512GB SSD
-                  </p>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="text-2xl font-bold text-[#3498db]">
-                      $15,999
-                    </span>
-                    <span className="text-sm text-gray-500 line-through">
-                      $19,999
-                    </span>
-                  </div>
-                  <button className="w-full bg-[#3498db] text-white py-2 rounded-lg font-semibold hover:bg-[#2980b9] transition-colors flex items-center justify-center gap-2">
-                    <ShoppingCart size={18} />
-                    Agregar al carrito
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>

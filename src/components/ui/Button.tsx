@@ -28,10 +28,23 @@ const Button: React.FC<ButtonProps> = ({
       "bg-red-500 text-white hover:bg-red-600 active:bg-red-700 shadow-md hover:shadow-lg",
   };
 
+  // Generar aria-label descriptivo
+  const getAriaLabel = () => {
+    if (props["aria-label"]) return props["aria-label"];
+
+    if (isLoading) {
+      return `Cargando, ${children}`;
+    }
+
+    return undefined; // El texto del botón ya es descriptivo
+  };
+
   return (
     <button
       className={`${baseStyles} ${variants[variant]} ${className}`}
       disabled={disabled || isLoading}
+      aria-label={getAriaLabel()}
+      aria-busy={isLoading}
       {...props}
     >
       {isLoading ? (
@@ -41,6 +54,7 @@ const Button: React.FC<ButtonProps> = ({
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <circle
               className="opacity-25"
